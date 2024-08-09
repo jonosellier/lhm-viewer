@@ -10,4 +10,6 @@ declare global {
 	}
 }
 
+declare module 'plotly.js-dist';
+
 export {};
