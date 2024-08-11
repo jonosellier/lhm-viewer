@@ -3,7 +3,7 @@ import type { DataPoint, TreeItem } from './data';
 
 export class LhmData {
 	data: DataPoint[] = [];
-	pathTree: TreeItem = { children: {} };
+	pathTree: TreeItem = { children: {}, path: '' };
 	deviceName: Record<string, string> = {};
 	valid = false;
 	constructor(csvData?: string) {
@@ -25,7 +25,7 @@ export class LhmData {
 			return dataPoint;
 		});
 
-		const pathTree: TreeItem = { children: {} };
+		const pathTree: TreeItem = { children: {}, path: '' };
 
 		const deviceName: Record<string, string> = {};
 		hwPaths.forEach((pathStr, i) => {

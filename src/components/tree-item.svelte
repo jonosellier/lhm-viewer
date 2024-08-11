@@ -2,7 +2,7 @@
 	import type { TreeItem } from '$lib/data';
 	import { preferences } from '$lib/preferences.store';
 	import { selectedItems } from '$lib/selected-metrics.store';
-	export let label;
+	export let label = '';
 	export let data: TreeItem;
 	export let level = 0;
 
@@ -29,20 +29,20 @@
 	}
 </script>
 
-<div class="item-holder">
+<div class="item-holder w-full">
 	{#if data.children}
 		<button
-			style={'top: ' + level * 24 + 'px; z-index: ' + (999 - level)}
+			style={'top: ' + level * 32 + 'px; z-index: ' + (999 - level)}
 			class="px-2 bg-slate-700 border-b border-l border-slate-500 w-full text-start hover:bg-orange-700"
 			on:click={toggle}
 		>
-			{label}
+			<slot></slot>
 		</button>
 		{#if show}
 			<ul class="border-b border-l border-slate-500">
 				{#each Object.keys(data.children) as el}
 					<li>
-						<svelte:self label={el} data={data.children[el]} level={level + 1} />
+						<svelte:self label={el} data={data.children[el]} level={level + 1}>{el}</svelte:self>
 					</li>
 				{/each}
 			</ul>
@@ -81,7 +81,7 @@
 	button {
 		margin: 0;
 		position: sticky;
-		height: 24px;
+		height: 32px;
 	}
 	ul {
 		list-style-type: none;
