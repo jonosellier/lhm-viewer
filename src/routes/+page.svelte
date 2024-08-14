@@ -7,8 +7,10 @@
 	import DataSelector from '$components/data-selector.svelte';
 	import { subset } from '$lib/data-subset.store';
 	import { save } from '$lib/file-manager';
+	import UserButton from '$components/user-button.svelte';
 </script>
 
+<UserButton />
 {#if $data.valid}
 	<div class="fixed top-0 left-0 w-full flex h-9 m-2 items-start z-50">
 		<SensorSelector></SensorSelector>

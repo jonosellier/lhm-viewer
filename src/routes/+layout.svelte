@@ -1,4 +1,6 @@
 <script>
+	import UserButton from '$components/user-button.svelte';
+	import { userStore } from '$lib/db';
 	export const ssr = false;
 	import '../app.css';
 </script>
