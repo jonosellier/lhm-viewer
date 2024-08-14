@@ -44,7 +44,7 @@
 				class:bg-orange-600={show}>▼</button
 			>
 			<div class="inline-flex flex-grow-1 w-full justify-between">
-				<div class="ms-2 capitalize"><slot></slot>({level})</div>
+				<div class="ms-2 capitalize"><slot></slot></div>
 				{#if alwaysShow || activatedChildren > 0}
 					<span
 						class="bg-slate-500 text-slate-200 rounded-full inline-block min-w-5 px-1 h-5 m-1 text-sm text-center"

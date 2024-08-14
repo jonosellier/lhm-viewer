@@ -9,7 +9,9 @@
 </script>
 
 <div class="border border-slate-500 rounded-sm overflow-auto bg-slate-800 flex-shrink-0 w-96 h-max">
-	<TreeItem label={'Sensors'} data={$data.pathTree} alwaysShow={true}>Sensors</TreeItem>
+	<TreeItem label={'Sensors'} data={{ children: $data.pathTree, path: '' }} alwaysShow={true}
+		>Sensors</TreeItem
+	>
 </div>
 
 <style>
