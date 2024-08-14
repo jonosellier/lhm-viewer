@@ -31,7 +31,7 @@ export class LhmData {
 		'level',
 		'throughput'
 	] as const;
-	private readonly pathMatcher = new RegExp(`\/(.+)\/(${LhmData.metricTypes.join('|')})\/(.+)`);
+	private readonly pathMatcher = new RegExp(`/(.+)/(${LhmData.metricTypes.join('|')})/(.+)`);
 	constructor(csvData?: string) {
 		if (!csvData) {
 			return;
