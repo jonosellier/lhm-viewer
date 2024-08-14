@@ -120,11 +120,11 @@
 	label:has(input:checked):hover {
 		background-color: var(--hover-color);
 		border-color: var(--text);
+		color: var(--text);
 	}
 
-	label:has(input:checked) {
-		--hover-color: #cbd5e140;
-		--text: #cbd5e1;
-		color: var(--text);
+	label:hover {
+		background-color: #cbd5e140;
+		color: #cbd5e1;
 	}
 </style>

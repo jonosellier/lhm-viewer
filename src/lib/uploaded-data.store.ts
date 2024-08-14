@@ -50,7 +50,7 @@ export class LhmData {
 		this.valid = true;
 		this.deviceName = deviceName;
 		this.subsets = subsets;
-		this.colorSenors(false);
+		this.colorSenors(true);
 	}
 
 	toFile(): LhmFile {
@@ -82,11 +82,10 @@ export class LhmData {
 					const path = this.pathTree[device]?.children?.[sensorType]?.children?.[sensor]?.path;
 					if (path) {
 						const color = hslToHex(
-							j % 2 === 0
-								? ((i / (devices.length * 1.25)) * 360) | 0
-								: ((i / devices.length) * 360) | 0,
+							((i / (devices.length * (1 + (j % 3) * 0.2))) * 360) | 0,
 							100,
-							90 - (((j / sensors.length) * 55) | 0)
+							Math.min(90, sensors.length * 30) -
+								(((((j / 3) | 0) / ((sensors.length / 3) | 0)) * 55) | 0)
 						);
 						console.log({
 							color,
