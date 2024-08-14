@@ -3,15 +3,16 @@ import { writable } from 'svelte/store';
 
 export type Preferences = {
 	sensorColor: Record<string, string>;
+	sensorName: Record<string, string>;
 };
 
 export const preferences = writable<Preferences>(getSavedPrefs());
 
-function getSavedPrefs() {
+function getSavedPrefs(): Preferences {
 	if (browser) {
-		return JSON.parse(localStorage.getItem('prefs') ?? '{"sensorColor": {}}');
+		return JSON.parse(localStorage.getItem('prefs') ?? '{"sensorColor": {}, "sensorName": {}}');
 	}
-	return { sensorColor: {} };
+	return { sensorColor: {}, sensorName: {} };
 }
 
 preferences.subscribe((v) => {

@@ -3,6 +3,6 @@ export type TreeItem =
 	| { children?: undefined; selected: boolean; path: string };
 
 export type DataPoint = {
-	time: string;
+	time: Date;
 	sensor: Record<string, number>;
 };

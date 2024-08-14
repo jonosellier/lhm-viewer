@@ -4,46 +4,39 @@
 	import { preferences, type Preferences } from '$lib/preferences.store';
 	import type { LayoutAxis, PlotData } from 'plotly.js';
 	import Plot, { type Data, type Layout } from 'svelte-plotly.js';
+	import SensorGrid from './sensor-grid.svelte';
+	import { LhmData } from '$lib/uploaded-data.store';
 	export let data: DataPoint[];
 	export let show: string[];
 	export let deviceName: Record<string, string>;
+	export let subset: [Date, Date] | undefined = undefined;
 	// export let labels: Record<string, string>;
 
-	let seenTypes: string[] = [];
+	let seenTypes: (typeof LhmData.metricTypes)[number][] = [];
 
 	let chartData: { layout: Partial<Layout>; data: Data[] } = { layout: {}, data: [] };
 
-	const chartTypes = [
-		'control',
-		'voltage',
-		'temperature',
-		'fan',
-		'load',
-		'power',
-		'clock',
-		'factor',
-		'data',
-		'smalldata',
-		'level',
-		'throughput'
-	];
+	const chartTypes = LhmData.metricTypes;
 
-	const chartLayout: Record<string, { unit: string; range?: [number, number] }> = {
+	const chartLayout: Record<
+		(typeof LhmData.metricTypes)[number],
+		{ unit: string; range?: [number, number] }
+	> = {
 		control: { unit: 'Unknown' },
 		voltage: { unit: 'V', range: [0, 15] },
-		temperature: { unit: 'deg C', range: [0, 100] },
+		temperature: { unit: 'deg C', range: [0, 115] },
 		fan: { unit: 'RPM' },
-		load: { unit: '%', range: [0, 100] },
+		load: { unit: '%', range: [0, 105] },
 		power: { unit: 'W' },
 		clock: { unit: 'MHz' },
 		factor: { unit: 'Unitless' },
-		data: { unit: 'MB' },
+		data: { unit: 'GB' },
 		smalldata: { unit: 'KB' },
 		level: { unit: 'Unitless' },
 		throughput: { unit: 'KB/s' }
 	};
 
-	$: createPlotData(data, show, $preferences);
+	$: createPlotData(data, show, $preferences, subset);
 
 	function createLayout(traces: Partial<PlotData>[]) {
 		const uniqueTraces = Array.from(new Set(traces.map((v) => v.yaxis))).length;
@@ -81,7 +74,12 @@
 		return baseLayout;
 	}
 
-	function createPlotData(data: DataPoint[], show: string[], preferences: Preferences): any {
+	function createPlotData(
+		data: DataPoint[],
+		show: string[],
+		preferences: Preferences,
+		selectedRange: [Date, Date] | undefined
+	): any {
 		if (show.length < 1) {
 			chartData = {
 				data: [],
@@ -92,7 +90,9 @@
 		const labels = data.map((v) => new Date(v.time));
 		seenTypes = [];
 		const traces: Partial<PlotData>[] = show.map((s) => {
-			const chartType = chartTypes.find((v) => s.split('/').includes(v)) as string;
+			const chartType = chartTypes.find((v) =>
+				s.split('/').includes(v)
+			) as (typeof LhmData.metricTypes)[number];
 			if (chartType && !seenTypes.includes(chartType)) {
 				console.log('Saw', chartType);
 				seenTypes.push(chartType);
@@ -102,11 +102,15 @@
 			return {
 				type: 'scatter',
 				x: labels,
-				y: data.map((v) => v.sensor[s]),
+				y: data
+					.filter(
+						(v) => !selectedRange || (v.time >= selectedRange[0] && v.time <= selectedRange[1])
+					)
+					.map((v) => v.sensor[s]),
 				yaxis: 'y' + +(seenTypes.findIndex((v) => v === chartType) + 1),
 				name: deviceName[s],
 				line: {
-					color: preferences.sensorColor[s] + '80'
+					color: preferences.sensorColor[s]
 				}
 			};
 		});
@@ -135,9 +139,7 @@
 		/>
 	{:else}
 		<div class="flex items-center justify-center h-full">
-			<div class="p-8 rounded-xl border border-slate-500 bg-slate-800">
-				<p class="text-center text-2xl">Select some sensor data to plot</p>
-			</div>
+			<SensorGrid></SensorGrid>
 		</div>
 	{/if}
 	<!-- {/each} -->
