@@ -22,9 +22,9 @@
 		(typeof LhmData.metricTypes)[number],
 		{ unit: string; range?: [number, number] }
 	> = {
-		control: { unit: 'Unknown' },
+		control: { unit: '%' },
 		voltage: { unit: 'V', range: [0, 15] },
-		temperature: { unit: 'deg C', range: [0, 115] },
+		temperature: { unit: '°C', range: [0, 115] },
 		fan: { unit: 'RPM' },
 		load: { unit: '%', range: [0, 105] },
 		power: { unit: 'W' },
@@ -32,7 +32,7 @@
 		factor: { unit: 'Unitless' },
 		data: { unit: 'GB' },
 		smalldata: { unit: 'KB' },
-		level: { unit: 'Unitless' },
+		level: { unit: 'Varied' },
 		throughput: { unit: 'KB/s' }
 	};
 
@@ -43,7 +43,7 @@
 
 		const initialLayoutOptions = chartLayout[seenTypes[0]];
 		const baseLayout: Partial<Layout> = {
-			showlegend: true,
+			showlegend: false,
 			paper_bgcolor: '#0f172a',
 			plot_bgcolor: '#020617',
 			font: { color: '#cbd5e1' },
