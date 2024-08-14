@@ -69,7 +69,7 @@
 			class="flex align-top hover:text-slate-900 hover:bg-slate-300 px-2 rounded border border-transparent hover:border-slate-300"
 			style={$preferences.sensorColor[data.path]
 				? `--hover-color: ${$preferences.sensorColor[data.path]}40; --text: ${$preferences.sensorColor[data.path]}`
-				: ''}
+				: `--hover-color: ${data.color}40; --text: ${data.color}`}
 			><input
 				type="checkbox"
 				checked={$selectedItems.has(data.path)}
@@ -82,8 +82,8 @@
 					type="color"
 					on:change={(e) => setColor(data.path, e.currentTarget.value)}
 					class="w-4 h-4 m-1 rounded-sm"
-					value={$preferences.sensorColor[data.path]}
-					style:background-color={$preferences.sensorColor[data.path]}
+					value={$preferences.sensorColor[data.path] ?? data.color}
+					style:background-color={$preferences.sensorColor[data.path] ?? data.color}
 				/>
 			{/if}
 		</label>

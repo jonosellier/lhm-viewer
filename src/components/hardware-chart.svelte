@@ -9,6 +9,7 @@
 	export let data: DataPoint[];
 	export let show: string[];
 	export let deviceName: Record<string, string>;
+	export let deviceColor: Record<string, string>;
 	export let subset: [Date, Date] | undefined = undefined;
 	// export let labels: Record<string, string>;
 
@@ -110,7 +111,7 @@
 				yaxis: 'y' + +(seenTypes.findIndex((v) => v === chartType) + 1),
 				name: deviceName[s],
 				line: {
-					color: preferences.sensorColor[s]
+					color: preferences.sensorColor[s] ?? deviceColor[s]
 				}
 			};
 		});

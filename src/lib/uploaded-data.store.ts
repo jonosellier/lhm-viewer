@@ -1,5 +1,5 @@
 import { get, writable } from 'svelte/store';
-import type { DataPoint, SensorTree } from './data';
+import type { DataPoint, MetricType, SensorTree } from './data';
 import { preferences } from './preferences.store';
 import { hslToHex } from './color-tools';
 
@@ -8,16 +8,19 @@ export type LhmFile = {
 	pathTree: SensorTree;
 	deviceName: Record<string, string>;
 	name: string;
+	deviceColor: Record<string, string>;
+	subsets: [Date, Date][];
 };
 
 export class LhmData {
 	data: DataPoint[] = [];
 	pathTree: SensorTree = {};
 	deviceName: Record<string, string> = {};
+	deviceColor: Record<string, string> = {};
 	valid = false;
 	name: string = '';
 	subsets: [Date, Date][] = [];
-	static readonly metricTypes = [
+	static readonly metricTypes: MetricType[] = [
 		'control',
 		'voltage',
 		'temperature',
@@ -50,28 +53,23 @@ export class LhmData {
 		this.valid = true;
 		this.deviceName = deviceName;
 		this.subsets = subsets;
-		this.colorSenors(true);
+		this.deviceColor = this.colorSensors();
 	}
 
 	toFile(): LhmFile {
-		const { data, pathTree, deviceName, name } = this;
-		return { data, pathTree, deviceName, name };
+		const { data, pathTree, deviceName, deviceColor, name, subsets } = this;
+		return { data, pathTree, deviceName, deviceColor, name, subsets };
 	}
 
-	static fromFile(file: LhmFile) {
-		const { data, pathTree, deviceName, name } = file;
+	static fromFile(file: LhmFile): LhmData {
 		const instance = new LhmData();
-		instance.data = data;
-		instance.pathTree = pathTree;
-		instance.deviceName = deviceName;
-		instance.name = name;
-		instance.valid = true;
-		return instance;
+		return Object.assign<LhmData, LhmFile, { valid: boolean }>(instance, file, {
+			valid: true
+		}) as LhmData;
 	}
 
-	colorSenors(force = false) {
-		let shouldUpdate = force;
-		const p = get(preferences);
+	colorSensors() {
+		const colorMap: Record<string, string> = {};
 		const devices = Object.keys(this.pathTree ?? {});
 		for (let i = 0; i < devices.length; i++) {
 			const device = devices[i];
@@ -79,31 +77,22 @@ export class LhmData {
 				const sensors = Object.keys(this.pathTree[device].children?.[sensorType]?.children ?? {});
 				for (let j = 0; j < sensors.length; j++) {
 					const sensor = sensors[j];
-					const path = this.pathTree[device]?.children?.[sensorType]?.children?.[sensor]?.path;
-					if (path) {
+					const sensorLeaf = this.pathTree[device]?.children?.[sensorType]?.children?.[sensor];
+					if (sensorLeaf) {
 						const color = hslToHex(
 							((i / (devices.length * (1 + (j % 3) * 0.2))) * 360) | 0,
 							100,
 							Math.min(90, sensors.length * 30) -
 								(((((j / 3) | 0) / ((sensors.length / 3) | 0)) * 55) | 0)
 						);
-						console.log({
-							color,
-							device,
-							sensor,
-							path
-						});
-						if (force || !p.sensorColor[path]) {
-							p.sensorColor[path] = color;
-							shouldUpdate = true;
-						}
+						sensorLeaf.color = color;
+						colorMap[sensorLeaf.path] = color;
 					}
 				}
 			}
 		}
-		if (shouldUpdate) {
-			preferences.set(p);
-		}
+
+		return colorMap;
 	}
 
 	toJson(pretty = false) {
@@ -199,7 +188,8 @@ export class LhmData {
 			if (!pathTree[device].children[sensorType].children[sensors[i]]) {
 				pathTree[device].children[sensorType].children[sensors[i]] = {
 					path: `${device}/${sensorType}/${sensor}`,
-					selected: false
+					selected: false,
+					color: '#000000'
 				};
 				deviceName[pathStr] = sensors[i];
 			}
