@@ -30,7 +30,8 @@
 				return p;
 			});
 		}
-		dataStore.set(new MultiChartData(csvContents));
+		dataStore.set(new MultiChartData(csvContents, csvFile.name));
+		goto('/new');
 	}
 </script>
 
