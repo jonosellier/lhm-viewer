@@ -42,6 +42,8 @@ export class MultiChartData {
 		'throughput'
 	] as const;
 
+	static readonly pathMatcher = new RegExp(`/(.+)/(${MultiChartData.metricTypes.join('|')})/(.+)`);
+
 	getChartType(path: string) {
 		return this._chartType.get(path);
 	}
@@ -51,11 +53,11 @@ export class MultiChartData {
 	}
 
 	constructor(csvData?: string, name?: string) {
+		this.name = name ?? new Date().toISOString();
 		if (!csvData) {
 			return;
 		}
 		const { hwPaths, sensors, dataRows } = this.readCsvData(csvData);
-		this.name = name ?? new Date().toISOString();
 		// used to set the same hue for every sensor on the same device
 		const deviceSet = new Set<string>();
 
@@ -153,7 +155,9 @@ export class MultiChartData {
 					return pathStr.replace(pathMapKeys[i], pathMap[pathMapKeys[i]]);
 				}
 			}
-			const [device, type, sensor] = pathStr.replace(pathMatcher, '$1:$2:$3').split(':');
+			const [device, type, sensor] = pathStr
+				.replace(MultiChartData.pathMatcher, '$1:$2:$3')
+				.split(':');
 			return `${device.replace(/\//g, '_').replace(/\{[A-F0-9-]+\}/, (substring) => {
 				if (!macsSeen.includes(substring)) {
 					macsSeen.push(substring);
@@ -165,37 +169,22 @@ export class MultiChartData {
 		return hwPaths;
 	}
 
-	private detectDataSubsets(data: Date[]) {
-		const intervals = data
-			.map((d, i) => {
-				if (i > 0) {
-					return d.valueOf() - data[i - 1].valueOf();
-				}
-				return 0;
-			})
-			.sort();
-
-		const regularInterval = intervals[(intervals.length * 0.9) | 0]; // get 90th percentile
-
+	private detectDataSubsets(data: Date[]): [number, number][] {
+		const intervals = data.map((d, i) => (i > 0 ? d.valueOf() - data[i - 1].valueOf() : 0));
+		const regularInterval = intervals[(intervals.length * 0.9) | 0];
 		const subsets: [number, number][] = [];
 		let subsetStart = 0;
+
 		for (let i = 1; i < data.length; i++) {
-			const element = data[i];
-			const prevElement = data[i - 1];
-			const closenessToInterval = (element.valueOf() - prevElement.valueOf()) / regularInterval;
-			if (closenessToInterval > 50) {
-				console.log({ wanted: regularInterval, found: closenessToInterval });
-				subsets.push([subsetStart, i - 1]); // push current subset
+			if (intervals[i] > 50 * regularInterval) {
+				subsets.push([subsetStart, i - 1]);
 				subsetStart = i;
 			}
 		}
-		subsets.push([subsetStart, data.length - 1]); // push final subset which has last elements
-
+		subsets.push([subsetStart, data.length - 1]);
 		return subsets;
 	}
 }
-
-const pathMatcher = new RegExp(`/(.+)/(${MultiChartData.metricTypes.join('|')})/(.+)`);
 
 export type ChartData = {
 	label: string;
