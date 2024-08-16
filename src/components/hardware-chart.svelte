@@ -36,6 +36,7 @@
 			plot_bgcolor: '#020617',
 			font: { color: '#cbd5e1' },
 			dragmode: 'pan' as any,
+			hovermode: 'x',
 			yaxis: {
 				domain: [0, 1 / uniqueTraces - 0.0125],
 				title: `${seenTypes[0]?.toUpperCase()} (${initialLayoutOptions?.unit})`,
@@ -113,7 +114,9 @@
 		<Plot
 			data={$chartData.data}
 			layout={$chartData.layout}
-			config={{ scrollZoom: true, displayModeBar: false }}
+			config={{
+				scrollZoom: true
+			}}
 			fillParent={true}
 			debounce={250}
 		/>

@@ -39,11 +39,12 @@
 		}}>All</button
 	>
 </div>
-
-<div class="z-30">
-	<h2 class="text-sm text-slate-400 ps-2 pt-3">Select timeframe to export</h2>
-	<DataSelector></DataSelector>
-</div>
+{#if $dataStore.subsets.length > 1}
+	<div class="z-30">
+		<h2 class="text-sm text-slate-400 ps-2 pt-3">Select timeframe to export</h2>
+		<DataSelector></DataSelector>
+	</div>
+{/if}
 
 <hr class="border-slate-500 my-5" />
 This will share

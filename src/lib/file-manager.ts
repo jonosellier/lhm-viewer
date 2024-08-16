@@ -7,7 +7,7 @@ export async function cacheSave(data: MultiChartData, id: string) {
 }
 
 export async function cacheLoad(id: string, name?: string) {
-	const compressedData = await loadFromIndexDb(id);
+	const compressedData = await loadFromIndexDb(id).catch((e) => null);
 	if (!compressedData) {
 		return null;
 	}
@@ -50,6 +50,13 @@ function storeInIndexDb(data: ArrayBuffer, key: string): Promise<void> {
 
 		request.onsuccess = (event) => {
 			const db = (event.target as IDBOpenDBRequest).result;
+
+			// Check if the object store exists
+			if (!db.objectStoreNames.contains('graphStore')) {
+				resolve(); // Resolve early if the store doesn't exist (no-op)
+				return;
+			}
+
 			const transaction = db.transaction('graphStore', 'readwrite');
 			const store = transaction.objectStore('graphStore');
 			const putRequest = store.put(data, key);
@@ -78,6 +85,13 @@ function loadFromIndexDb(key: string): Promise<ArrayBuffer | null> {
 
 		request.onsuccess = (event) => {
 			const db = (event.target as IDBOpenDBRequest).result;
+
+			// Check if the object store exists
+			if (!db.objectStoreNames.contains('graphStore')) {
+				resolve(null); // Return null if the store doesn't exist
+				return;
+			}
+
 			const transaction = db.transaction('graphStore', 'readonly');
 			const store = transaction.objectStore('graphStore');
 			const getRequest = store.get(key);

@@ -8,11 +8,6 @@
 	let csvInputEl!: HTMLInputElement;
 	let reportInputEl!: HTMLInputElement;
 	let waiting = false;
-	dataStore.subscribe((v) => {
-		if (v) {
-			goto('/new');
-		}
-	});
 	async function loadCsv() {
 		if (!csvInputEl.files) {
 			return;
