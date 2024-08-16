@@ -1,23 +1,21 @@
-import { LhmData, type LhmFile } from './uploaded-data.store';
+import { MultiChartData } from './multi-chart';
 
-export async function save(data: LhmData, newName?: string) {
-	if (newName) {
-		data.name = newName;
-	}
-	const compressedData = await compress(data.toJson());
-	return storeInDb(compressedData, data.name);
+export async function cacheSave(data: MultiChartData, id: string) {
+	console.log('Caching with id', id);
+	const compressedData = await compress(data.toCsv());
+	return storeInIndexDb(compressedData, id);
 }
 
-export async function load(name: string) {
-	const compressedData = await loadFromDb(name);
+export async function cacheLoad(id: string, name?: string) {
+	const compressedData = await loadFromIndexDb(id);
 	if (!compressedData) {
-		alert('No data');
-		return new LhmData();
+		return null;
 	}
-	const jsonString = await decompress(compressedData);
-	const lhmFile: LhmFile = JSON.parse(jsonString);
-	lhmFile.subsets = lhmFile.subsets.map(([a, b]) => [new Date(a), new Date(b)]);
-	return LhmData.fromFile(lhmFile);
+	console.log(`Cache hit. Saved ${(compressedData.byteLength / 1000) | 0}KB`);
+	const csvString = await decompress(compressedData);
+	console.log('Loading ', name);
+	const data = new MultiChartData(csvString, name);
+	return data;
 }
 
 function compress(data: string) {
@@ -39,7 +37,7 @@ function decompress(byteArray: ArrayBuffer) {
 	});
 }
 
-function storeInDb(data: ArrayBuffer, key: string): Promise<void> {
+function storeInIndexDb(data: ArrayBuffer, key: string): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const request = indexedDB.open('db', 1);
 
@@ -74,7 +72,7 @@ function storeInDb(data: ArrayBuffer, key: string): Promise<void> {
 	});
 }
 
-function loadFromDb(key: string): Promise<ArrayBuffer | null> {
+function loadFromIndexDb(key: string): Promise<ArrayBuffer | null> {
 	return new Promise((resolve, reject) => {
 		const request = indexedDB.open('db', 1);
 

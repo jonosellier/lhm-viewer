@@ -88,7 +88,8 @@
 			</div>
 		{:else}
 			<div>
-				<input
+				No sign up available ATM
+				<!-- <input
 					type="email"
 					bind:value={email}
 					class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
@@ -114,7 +115,7 @@
 					}}
 				>
 					{signUpState.text}
-				</button>
+				</button> -->
 			</div>
 		{/if}
 	</div>

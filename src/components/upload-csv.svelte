@@ -1,11 +1,18 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { MultiChartData } from '$lib/multi-chart';
 	import { preferences } from '$lib/preferences.store';
 	import { parseReport } from '$lib/report-parser';
-	import { data, LhmData } from '$lib/uploaded-data.store';
+	import { dataStore } from '$lib/uploaded-data.store';
 
 	let csvInputEl!: HTMLInputElement;
 	let reportInputEl!: HTMLInputElement;
 	let waiting = false;
+	dataStore.subscribe((v) => {
+		if (v) {
+			goto('/new');
+		}
+	});
 	async function loadCsv() {
 		if (!csvInputEl.files) {
 			return;
@@ -28,7 +35,7 @@
 				return p;
 			});
 		}
-		data.set(new LhmData(csvContents));
+		dataStore.set(new MultiChartData(csvContents));
 	}
 </script>
 
@@ -37,21 +44,11 @@
 </p>
 <p>Uploading a hardware report will better group the sensor data with more user-friendly names</p>
 <p class="text-slate-500 mt-6 ps-2">Log File</p>
-<input
-	type="file"
-	accept=".csv"
-	class="bg-slate-700 rounded-lg border border-slate-500 w-full p-5 mb-6"
-	bind:this={csvInputEl}
-/>
+<input type="file" accept=".csv" class="form-control mb-6" bind:this={csvInputEl} />
 <p class="text-slate-500 ps-2">Hardware Report</p>
-<input
-	type="file"
-	accept=".txt"
-	class="bg-slate-700 rounded-lg border border-slate-500 w-full p-5"
-	bind:this={reportInputEl}
-/>
+<input type="file" accept=".txt" class="form-control" bind:this={reportInputEl} />
 <button
-	class="bg-orange-700 text-white px-3 py-2 rounded-lg mt-5 w-full"
+	class="btn-primary btn-lg mt-5 w-full"
 	disabled={waiting || !csvInputEl?.files}
 	on:click={() => loadCsv()}>{waiting ? 'Uploading' : 'Load in to Chart'}</button
 >

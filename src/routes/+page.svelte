@@ -1,36 +1,15 @@
 <script lang="ts">
-	import { selectedItems } from '$lib/selected-metrics.store';
-	import { data } from '$lib/uploaded-data.store';
-	import HardwareChart from '$components/hardware-chart.svelte';
-	import SensorSelector from '$components/sensor-selector.svelte';
-	import UploadCsv from '$components/upload-csv.svelte';
-	import DataSelector from '$components/data-selector.svelte';
-	import { subset } from '$lib/data-subset.store';
-	import { save } from '$lib/file-manager';
-	import UserButton from '$components/user-button.svelte';
+	import { goto } from '$app/navigation';
+	import { userStore } from '$lib/db';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		if ($userStore) {
+			goto('/charts');
+		} else {
+			goto('/upload');
+		}
+	});
 </script>
 
-<UserButton />
-{#if $data.valid}
-	<div class="fixed top-0 left-0 w-full flex h-9 m-2 items-start z-50">
-		<SensorSelector></SensorSelector>
-		<DataSelector></DataSelector>
-		<button
-			class="bg-orange-600 hover:bg-orange-700 text-white px-2 rounded"
-			on:click={() => save($data, 'my-save')}>Save</button
-		>
-	</div>
-	<HardwareChart
-		data={$data.data}
-		show={Array.from($selectedItems)}
-		deviceName={$data.deviceName}
-		deviceColor={$data.deviceColor}
-		subset={$subset}
-	></HardwareChart>
-{:else}
-	<div class="flex items-center justify-center h-full">
-		<div class="p-8 rounded-xl border border-slate-500 bg-slate-800">
-			<UploadCsv></UploadCsv>
-		</div>
-	</div>
-{/if}
+<h1 class="text-4xl text-center mt-16">Loading...</h1>

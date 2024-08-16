@@ -1,6 +1,6 @@
-import { writable } from 'svelte/store';
+// import { writable } from 'svelte/store';
 
-export const selectedItems = writable(new Set<string>());
+// export const selectedItems = writable(new Set<string>());
 
 // selectedItems.subscribe((s) => {
 // 	const colorUpdate: Preferences['sensorColor'] = {};

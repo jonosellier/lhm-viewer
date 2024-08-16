@@ -1,21 +1,39 @@
-<script>
-	import { selectedItems } from '$lib/selected-metrics.store';
-	import { data } from '$lib/uploaded-data.store';
+<script lang="ts">
+	import { dataStore } from '$lib/uploaded-data.store';
 	import { derived } from 'svelte/store';
 	import TreeItem from './tree-item.svelte';
-	let isOpen = true;
-
-	const selectedCount = derived(selectedItems, (s) => [...s].length);
+	import type { SensorTree } from '$lib/multi-chart';
+	export let startOpen = true;
+	export let maxHeight = 'calc(100dvh - 16px)';
+	const pathTree = derived(dataStore, (d) => {
+		const tree: SensorTree = {};
+		(d?.charts ?? []).forEach((v) => {
+			const [device, sensorType, sensor] = v.path.split('/');
+			if (!tree[device]) {
+				tree[device] = { path: device, children: {} };
+			}
+			if (!tree[device].children[sensorType]) {
+				tree[device].children[sensorType] = { path: `${device}/${sensorType}`, children: {} };
+			}
+			if (!tree[device].children[sensorType].children[v.label]) {
+				tree[device].children[sensorType].children[v.label] = {
+					path: `${device}/${sensorType}/${sensor}`,
+					selected: false,
+					color: v.color
+				};
+			}
+		});
+		return tree;
+	});
 </script>
 
-<div class="border border-slate-500 rounded-sm overflow-auto bg-slate-800 flex-shrink-0 w-96 h-max">
-	<TreeItem label={'Sensors'} data={{ children: $data.pathTree, path: '' }} alwaysShow={true}
-		>Sensors</TreeItem
-	>
+<div class="border border-slate-500 rounded overflow-hidden">
+	<div class=" overflow-auto bg-slate-800 flex-shrink-0 w-96" style:max-height={maxHeight}>
+		<TreeItem
+			label={'Sensors'}
+			item={{ children: $pathTree, path: '' }}
+			alwaysShow={true}
+			{startOpen}>Sensors</TreeItem
+		>
+	</div>
 </div>
-
-<style>
-	div {
-		max-height: calc(100dvh - 16px);
-	}
-</style>

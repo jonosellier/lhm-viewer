@@ -1,28 +1,15 @@
 <script lang="ts">
-	export const ssr = false;
-	import type { DataPoint } from '$lib/data';
+	import { MultiChartData, type MetricType } from '$lib/multi-chart';
 	import { preferences, type Preferences } from '$lib/preferences.store';
+	import { dataStore } from '$lib/uploaded-data.store';
+	import { json } from '@sveltejs/kit';
 	import type { LayoutAxis, PlotData } from 'plotly.js';
 	import Plot, { type Data, type Layout } from 'svelte-plotly.js';
-	import SensorGrid from './sensor-grid.svelte';
-	import { LhmData } from '$lib/uploaded-data.store';
-	export let data: DataPoint[];
-	export let show: string[];
-	export let deviceName: Record<string, string>;
-	export let deviceColor: Record<string, string>;
-	export let subset: [Date, Date] | undefined = undefined;
-	// export let labels: Record<string, string>;
+	import { derived } from 'svelte/store';
 
-	let seenTypes: (typeof LhmData.metricTypes)[number][] = [];
+	let seenTypes: MetricType[] = [];
 
-	let chartData: { layout: Partial<Layout>; data: Data[] } = { layout: {}, data: [] };
-
-	const chartTypes = LhmData.metricTypes;
-
-	const chartLayout: Record<
-		(typeof LhmData.metricTypes)[number],
-		{ unit: string; range?: [number, number] }
-	> = {
+	const chartLayout: Record<MetricType, { unit: string; range?: [number, number] }> = {
 		control: { unit: '%' },
 		voltage: { unit: 'V', range: [0, 15] },
 		temperature: { unit: '°C', range: [0, 115] },
@@ -37,7 +24,7 @@
 		throughput: { unit: 'KB/s' }
 	};
 
-	$: createPlotData(data, show, $preferences, subset);
+	const chartData = derived([dataStore, preferences], ([d, p]) => createPlotData(d, d.show, p));
 
 	function createLayout(traces: Partial<PlotData>[]) {
 		const uniqueTraces = Array.from(new Set(traces.map((v) => v.yaxis))).length;
@@ -51,9 +38,9 @@
 			dragmode: 'pan' as any,
 			yaxis: {
 				domain: [0, 1 / uniqueTraces - 0.0125],
-				title: `${seenTypes[0].toUpperCase()} (${initialLayoutOptions.unit})`,
+				title: `${seenTypes[0]?.toUpperCase()} (${initialLayoutOptions?.unit})`,
 				gridcolor: '#64748b',
-				range: initialLayoutOptions.range
+				range: initialLayoutOptions?.range
 			},
 			xaxis: {
 				rangeslider: {
@@ -63,10 +50,11 @@
 			}
 		};
 		for (let i = 2; i <= uniqueTraces; i++) {
+			console.log('working on', i);
 			const layoutOptions = chartLayout[seenTypes[i - 1]];
 			(baseLayout[`yaxis${i}` as keyof typeof baseLayout] as Partial<LayoutAxis>) = {
 				domain: [(i - 1) / uniqueTraces, i / uniqueTraces - 0.0125],
-				title: `${seenTypes[i - 1].toUpperCase()} (${layoutOptions.unit})`,
+				title: `${seenTypes[i - 1]?.toUpperCase()} (${layoutOptions.unit})`,
 				gridcolor: '#64748b',
 				range: layoutOptions.range
 			};
@@ -75,76 +63,71 @@
 		return baseLayout;
 	}
 
-	function createPlotData(
-		data: DataPoint[],
-		show: string[],
-		preferences: Preferences,
-		selectedRange: [Date, Date] | undefined
-	): any {
-		if (show.length < 1) {
-			chartData = {
-				data: [],
-				layout: {}
-			};
-			return;
+	function createPlotData(data: MultiChartData, shownData: number[], prefs: Preferences) {
+		if (shownData.length < 1 || data.charts.length < 1) {
+			return { layout: {}, data: [] };
 		}
-		const labels = data.map((v) => new Date(v.time));
 		seenTypes = [];
-		const traces: Partial<PlotData>[] = show.map((s) => {
-			const chartType = chartTypes.find((v) =>
-				s.split('/').includes(v)
-			) as (typeof LhmData.metricTypes)[number];
-			if (chartType && !seenTypes.includes(chartType)) {
-				console.log('Saw', chartType);
-				seenTypes.push(chartType);
-				console.log(seenTypes);
-			}
-			console.log('Putting data on ' + 'y' + +(seenTypes.findIndex((v) => v === chartType) + 1));
-			return {
-				type: 'scatter',
-				x: labels,
-				y: data
-					.filter(
-						(v) => !selectedRange || (v.time >= selectedRange[0] && v.time <= selectedRange[1])
-					)
-					.map((v) => v.sensor[s]),
-				yaxis: 'y' + +(seenTypes.findIndex((v) => v === chartType) + 1),
-				name: deviceName[s],
-				line: {
-					color: preferences.sensorColor[s] ?? deviceColor[s]
+		const selectedRange = data.subsets[data.selectedSubset];
+		const traces: Partial<PlotData>[] = data.charts
+			.filter((_, i) => shownData.includes(i))
+			.map((c) => {
+				const chartType = data.getChartType(c.path);
+				if (chartType && !seenTypes.includes(chartType)) {
+					console.log('Saw', chartType);
+					seenTypes.push(chartType);
+					console.log(seenTypes);
 				}
-			};
-		});
+				console.log('Putting data on ' + 'y' + +(seenTypes.findIndex((v) => v === chartType) + 1));
+				return {
+					type: 'scatter',
+					x: data.xAxis,
+					y: c.values.filter(
+						(_v, i) => !selectedRange || (i >= selectedRange[0] && i <= selectedRange[1])
+					),
+					yaxis: 'y' + +(seenTypes.findIndex((v) => v === chartType) + 1),
+					name: c.label,
+					line: {
+						color: prefs.sensorColor[c.path] ?? c.color
+					}
+				};
+			});
 
-		chartData = {
+		console.log({ traces });
+
+		return {
 			data: traces,
 			layout: createLayout(traces)
 		};
 	}
 </script>
 
-<div class="w-full h-screen">
+<div class="w-full h-full">
 	<!-- {#each traceGroups as group, idx} -->
 	<!-- <div
 			id={chart}
 			class="z-30 w-full flex-grow-1 h-full flex-shrink-1 border-slate-500 chart-el"
 			class:hidden={traceGroups[idx].length < 1}
 		></div> -->
-	{#if chartData.data.length > 0}
+	{#if $chartData.data.length > 0}
 		<Plot
-			data={chartData.data}
-			layout={chartData.layout}
+			data={$chartData.data}
+			layout={$chartData.layout}
 			config={{ scrollZoom: true, displayModeBar: false }}
 			fillParent={true}
 			debounce={250}
 		/>
 	{:else}
 		<div class="flex items-center justify-center h-full">
-			<SensorGrid></SensorGrid>
+			<div class="p-8 rounded-xl border border-slate-500 bg-slate-800">
+				<p class="text-center text-2xl">Select some sensor data to plot in the top-left</p>
+			</div>
 		</div>
 	{/if}
 	<!-- {/each} -->
 </div>
+
+<!-- <pre>{JSON.stringify(chartData, undefined, 2)}</pre> -->
 
 <style>
 </style>

@@ -18,3 +18,30 @@ input[type='color']::-webkit-color-swatch {
 button:disabled {
 	@apply pointer-events-none;
 }
+
+.btn-primary {
+	@apply bg-orange-600 hover:bg-orange-500 text-white border-orange-600;
+}
+
+.btn {
+	@apply px-2 py-1 border rounded;
+}
+
+.btn-lg {
+	@apply px-3 py-2 border text-lg rounded-lg;
+}
+
+.btn-sm {
+	@apply px-3 py-2 border text-xs rounded-sm;
+}
+
+.btn-default {
+	@apply bg-slate-700 hover:bg-slate-600 text-white border-slate-500;
+}
+.btn-borderless {
+	@apply bg-transparent hover:bg-slate-600 text-white border-transparent;
+}
+
+input.form-control {
+	@apply bg-slate-700 rounded-lg border border-slate-500 w-full p-5;
+}

@@ -2,6 +2,8 @@ import { get, writable } from 'svelte/store';
 import type { DataPoint, MetricType, SensorTree } from './data';
 import { preferences } from './preferences.store';
 import { hslToHex } from './color-tools';
+import { MultiChartData } from './multi-chart';
+import { browser } from '$app/environment';
 
 export type LhmFile = {
 	data: DataPoint[];
@@ -10,6 +12,7 @@ export type LhmFile = {
 	name: string;
 	deviceColor: Record<string, string>;
 	subsets: [Date, Date][];
+	displayedSensors: string[];
 };
 
 export class LhmData {
@@ -20,6 +23,8 @@ export class LhmData {
 	valid = false;
 	name: string = '';
 	subsets: [Date, Date][] = [];
+	selectedSubset = -1;
+	displayedSensors: string[] = [];
 	static readonly metricTypes: MetricType[] = [
 		'control',
 		'voltage',
@@ -57,15 +62,17 @@ export class LhmData {
 	}
 
 	toFile(): LhmFile {
-		const { data, pathTree, deviceName, deviceColor, name, subsets } = this;
-		return { data, pathTree, deviceName, deviceColor, name, subsets };
+		const { data, pathTree, deviceName, deviceColor, name, subsets, displayedSensors } = this;
+		return { data, pathTree, deviceName, deviceColor, name, subsets, displayedSensors };
 	}
 
 	static fromFile(file: LhmFile): LhmData {
-		const instance = new LhmData();
-		return Object.assign<LhmData, LhmFile, { valid: boolean }>(instance, file, {
+		const instance = Object.assign<LhmData, LhmFile, { valid: boolean }>(new LhmData(), file, {
 			valid: true
 		}) as LhmData;
+		instance.subsets = instance.subsets.map(([d, e]) => [new Date(d), new Date(e)] as [Date, Date]);
+		instance.data = instance.data.map((v) => ({ ...v, time: new Date(v.time) }));
+		return instance;
 	}
 
 	colorSensors() {
@@ -199,6 +206,6 @@ export class LhmData {
 	}
 }
 
-export const data = writable(new LhmData());
+export const dataStore = writable<MultiChartData>(new MultiChartData());
 
-data.subscribe((v) => console.log(v));
+dataStore.subscribe((v) => (browser ? ((window as any).my_data = v) : console.log(v)));

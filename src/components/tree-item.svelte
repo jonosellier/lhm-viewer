@@ -1,20 +1,26 @@
 <script lang="ts">
 	import type { TreeItem } from '$lib/data';
 	import { preferences } from '$lib/preferences.store';
-	import { selectedItems } from '$lib/selected-metrics.store';
+	import { dataStore } from '$lib/uploaded-data.store';
+	import { derived } from 'svelte/store';
 	export let label = '';
-	export let data: TreeItem;
+	export let item: TreeItem;
 	export let level = 0;
 	export let alwaysShow = false;
+	export let startOpen = true;
 
-	function handleChange(e: Event, data: TreeItem) {
-		const set = $selectedItems;
-		if (set.has(data.path as string)) {
-			set.delete(data.path as string);
-		} else {
-			set.add(data.path as string);
+	function handleChange(e: Event, item: TreeItem) {
+		if ($dataStore) {
+			const set = new Set($dataStore.show);
+			const idx: number = $dataStore.findByPath(item.path) as number;
+			if (set.has(idx)) {
+				set.delete(idx);
+			} else {
+				set.add(idx);
+			}
+			$dataStore.show = Array.from(set);
+			dataStore.set($dataStore);
 		}
-		selectedItems.set(set);
 	}
 
 	function setColor(path: string, value: string): any {
@@ -24,18 +30,25 @@
 		});
 	}
 
-	let show = !![...$selectedItems].find((v) => v.includes(data.path));
-	$: activatedChildren = [...$selectedItems].filter((v) => v.includes(data.path)).length;
+	const activatedChildren = derived(
+		dataStore,
+		(d) => d.show.map((idx) => d.charts[idx]).filter((v) => v.path.includes(item.path)).length ?? 0
+	);
+
+	const shownPaths = derived(dataStore, (d) => d?.show.map((idx) => d.charts[idx]?.path) ?? []);
+
+	let show = level > 0 && $activatedChildren > 0;
 	function toggle(e: Event) {
 		show = !show;
 	}
 </script>
 
-<div class="item-holder w-full">
-	{#if data.children}
+<div class="item-holder w-full bg-slate-800">
+	{#if item.children}
 		<div
-			class="px-2 bg-slate-700 border-b border-l border-slate-500 w-full text-start flex items-center heading"
+			class="px-2 bg-slate-700 border-slate-500 w-full text-start flex items-center heading"
 			style={'top: ' + level * 32 + 'px; z-index: ' + (999 - level)}
+			class:border-bottom={show}
 		>
 			<button
 				class="hover:bg-slate-500 h-4 w-4 m-1 p-0 rounded-full text-orange-50 text-xs duration-150"
@@ -45,45 +58,45 @@
 			>
 			<div class="inline-flex flex-grow-1 w-full justify-between">
 				<div class="ms-2 capitalize"><slot></slot></div>
-				{#if alwaysShow || activatedChildren > 0}
+				{#if alwaysShow || $activatedChildren > 0}
 					<span
 						class="bg-slate-500 text-slate-200 rounded-full inline-block min-w-5 px-1 h-5 m-1 text-sm text-center"
 					>
-						{activatedChildren}
+						{$activatedChildren}
 					</span>
 				{/if}
 			</div>
 		</div>
 		{#if show}
-			<ul class="border-b border-l border-slate-500">
-				{#each Object.keys(data.children) as el}
+			<ul class="border-t border-slate-500 relative z-50">
+				{#each Object.keys(item.children) as el}
 					<li>
-						<svelte:self label={el} data={data.children[el]} level={level + 1}>{el}</svelte:self>
+						<svelte:self label={el} item={item.children[el]} level={level + 1}>{el}</svelte:self>
 					</li>
 				{/each}
 			</ul>
 		{/if}
 	{:else}
 		<label
-			for={data.path?.replace(/\//g, '_')}
+			for={item.path?.replace(/\//g, '_')}
 			class="flex align-top hover:text-slate-900 hover:bg-slate-300 px-2 rounded border border-transparent hover:border-slate-300"
-			style={$preferences.sensorColor[data.path]
-				? `--hover-color: ${$preferences.sensorColor[data.path]}40; --text: ${$preferences.sensorColor[data.path]}`
-				: `--hover-color: ${data.color}40; --text: ${data.color}`}
+			style={$preferences.sensorColor[item.path]
+				? `--hover-color: ${$preferences.sensorColor[item.path]}40; --text: ${$preferences.sensorColor[item.path]}`
+				: `--hover-color: ${item.color}40; --text: ${item.color}`}
 			><input
 				type="checkbox"
-				checked={$selectedItems.has(data.path)}
-				on:click={(e) => handleChange(e, data)}
-				id={data.path?.replace(/\//g, '_')}
+				checked={$shownPaths.includes(item.path)}
+				on:click={(e) => handleChange(e, item)}
+				id={item.path?.replace(/\//g, '_')}
 			/>
 			<span class="flex-shrink-1 w-full ps-3">{label}</span>
-			{#if $selectedItems.has(data.path)}
+			{#if $shownPaths.includes(item.path)}
 				<input
 					type="color"
-					on:change={(e) => setColor(data.path, e.currentTarget.value)}
+					on:change={(e) => setColor(item.path, e.currentTarget.value)}
 					class="w-4 h-4 m-1 rounded-sm"
-					value={$preferences.sensorColor[data.path] ?? data.color}
-					style:background-color={$preferences.sensorColor[data.path] ?? data.color}
+					value={$preferences.sensorColor[item.path] ?? item.color}
+					style:background-color={$preferences.sensorColor[item.path] ?? item.color}
 				/>
 			{/if}
 		</label>
@@ -104,10 +117,6 @@
 		margin: 0;
 		padding-left: 0;
 	}
-	li:nth-child(even) {
-		background-color: #00000020;
-	}
-
 	li {
 		padding-left: 8px;
 	}

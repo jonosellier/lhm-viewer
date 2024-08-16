@@ -15,7 +15,7 @@
 </script>
 
 <button
-	class="fixed end-0 m-3 text-sm border border-slate-500 text-slate-100 hover:bg-slate-800 rounded-full px-3 py-1"
+	class="text-sm border border-slate-500 text-slate-100 hover:bg-slate-800 rounded-full px-3 py-1"
 	on:click={handleClick}
 >
 	{#if $userStore}
