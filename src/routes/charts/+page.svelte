@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { base } from '$app/paths';
 	import { getMyCharts, userStore } from '$lib/db';
 	import { onMount } from 'svelte';
 	const myCharts = getMyCharts();
@@ -36,10 +37,17 @@
 									.replace(', ', ' at ')}</td
 							>
 							<td class="px-6 py-4">
-								<a class="bg-slate-600 rounded px-2" href={`/${el.id}`}>Open</a>
+								<a class="bg-slate-600 rounded px-2" href={`${base}/${el.id}`}>Open</a>
 								<button class="bg-slate-600 rounded px-2">Delete</button>
 							</td>
 						</tr>
+					{:else}
+						<tr><td class="px-6 py-4" colspan="3">No charts</td></tr>
+						<tr
+							><td class="px-6 py-4" colspan="3"
+								><a href={`${base}/upload`} class="btn btn-default">Upload new chart</a></td
+							></tr
+						>
 					{/each}
 				{/await}
 			</tbody>
