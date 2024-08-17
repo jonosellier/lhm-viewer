@@ -4,6 +4,7 @@
 	import { preferences } from '$lib/preferences.store';
 	import { parseReport } from '$lib/report-parser';
 	import { dataStore } from '$lib/uploaded-data.store';
+	import { base } from '$app/paths';
 
 	let csvInputEl!: HTMLInputElement;
 	let reportInputEl!: HTMLInputElement;
@@ -31,7 +32,7 @@
 			});
 		}
 		dataStore.set(new MultiChartData(csvContents, csvFile.name));
-		goto('/new');
+		goto(base + '/new');
 	}
 </script>
 

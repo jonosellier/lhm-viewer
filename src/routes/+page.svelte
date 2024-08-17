@@ -1,15 +1,10 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { userStore } from '$lib/db';
-	import { onMount } from 'svelte';
-
-	onMount(() => {
-		if ($userStore) {
-			goto('/charts');
-		} else {
-			goto('/upload');
-		}
-	});
+	import { base } from '$app/paths';
 </script>
 
-<h1 class="text-4xl text-center mt-16">Loading...</h1>
+<div class="flex w-full h-full items-center justify-center">
+	<div class="p-8 rounded-xl border border-slate-500 bg-slate-800">
+		<h1 class="text-4xl pb-6">Get Started</h1>
+		<a href={`${base}/upload`} class="btn-lg btn-primary w-full mt-6">Upload new data</a>
+	</div>
+</div>

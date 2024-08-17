@@ -15,8 +15,13 @@ input[type='color']::-webkit-color-swatch {
 	border: none;
 }
 
+button,
+label {
+	user-select: none;
+}
+
 button:disabled {
-	@apply pointer-events-none;
+	@apply pointer-events-none bg-slate-950/50 text-slate-50/50;
 }
 
 .btn-primary {

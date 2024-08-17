@@ -1,4 +1,4 @@
-import { createClient, type User } from '@supabase/supabase-js';
+import { AuthError, createClient, type User } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_KEY } from '$env/static/public';
 import { get, writable } from 'svelte/store';
 import { dataStore } from './uploaded-data.store';
@@ -15,51 +15,58 @@ interface UserCredentials {
 	password: string;
 }
 
+export type AuthResult =
+	| {
+			error: null;
+			user: User;
+	  }
+	| {
+			error: string;
+			user: null;
+	  }
+	| {
+			error: string;
+			user: null;
+	  };
+
 const refresh = await supabase.auth.refreshSession();
 const currentUser = refresh.data?.user;
 
 export const userStore = writable<User | undefined>(currentUser ?? undefined);
 
-export async function createUser({ email, password }: UserCredentials) {
-	try {
-		const { data, error } = await supabase.auth.signUp({
-			email,
-			password
-		});
+export async function createUser({ email, password }: UserCredentials): Promise<AuthResult> {
+	const { data, error } = await supabase.auth.signUp({
+		email,
+		password
+	});
 
-		if (error) {
-			throw new Error(error.message);
-		}
-
-		const { user } = data;
-		if (user) {
-			userStore.set(user);
-		}
-		return user;
-	} catch (error) {
+	if (error) {
 		console.error('Error creating user:', error);
-		throw error;
+		return { user: null, error: error.message };
 	}
+
+	const { user } = data;
+	if (user) {
+		userStore.set(user);
+		return { user, error: null };
+	}
+	return { user: null, error: 'Unknown error' };
 }
 
-export async function signIn({ email, password }: UserCredentials) {
-	try {
-		const { data, error } = await supabase.auth.signInWithPassword({
-			email,
-			password
-		});
+export async function signIn({ email, password }: UserCredentials): Promise<AuthResult> {
+	const { data, error } = await supabase.auth.signInWithPassword({
+		email,
+		password
+	});
 
-		if (error) {
-			throw new Error(error.message);
-		}
-
-		const { user } = data;
-		userStore.set(user);
-		return user;
-	} catch (error) {
+	if (error) {
 		console.error('Error signing in user:', error);
-		throw error;
+		return { user: null, error: error.message };
 	}
+
+	const { user } = data;
+	userStore.set(user);
+	return { user, error: null };
 }
 
 export async function signOut() {
@@ -175,4 +182,34 @@ export async function getMyCharts() {
 	}
 
 	return data;
+}
+
+export async function changePassword(
+	current: string,
+	newPw: string,
+	confirm: string
+): Promise<AuthResult> {
+	const session = get(userStore);
+	if (!session || !current || newPw !== confirm) {
+		return { error: 'Validation error', user: null };
+	}
+	const signInRes = await signIn({ email: session.email ?? '', password: current });
+	if (signInRes.error) {
+		return { error: signInRes.error, user: null };
+	}
+	const { error, data } = await supabase.auth.updateUser({
+		password: newPw
+	});
+
+	const { user } = data;
+
+	if (error) {
+		console.error(error);
+		return { error: error.message, user: null };
+	}
+
+	if (!user) {
+		return { user: null, error: 'Empty user' };
+	}
+	return { user, error: null };
 }

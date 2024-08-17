@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { signOut, userStore } from '$lib/db';
+	import { base } from '$app/paths';
 
 	$: displayedUsername = $userStore?.email?.replace(/(....).*@.+\.(.+)/, '$1•••@•••.$2');
 	function handleClick(e: Event) {
@@ -9,21 +10,21 @@
 				signOut();
 			}
 		} else {
-			goto('/auth');
+			goto(base + '/auth');
 		}
 	}
 </script>
 
-<button
+<a
 	class="text-sm border border-slate-500 text-slate-100 hover:bg-slate-800 rounded-full px-3 py-1"
-	on:click={handleClick}
+	href={`${base}/auth`}
 >
 	{#if $userStore}
-		Log out {displayedUsername}
+		Manage {displayedUsername}
 	{:else}
 		Sign In/Up
 	{/if}
-</button>
+</a>
 
 <style>
 </style>

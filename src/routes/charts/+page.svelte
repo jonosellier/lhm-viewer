@@ -6,7 +6,7 @@
 	const myCharts = getMyCharts();
 	onMount(() => {
 		if (!$userStore) {
-			goto('/');
+			goto(base + '/');
 		}
 	});
 </script>
@@ -37,18 +37,18 @@
 									.replace(', ', ' at ')}</td
 							>
 							<td class="px-6 py-4">
-								<a class="bg-slate-600 rounded px-2" href={`${base}/${el.id}`}>Open</a>
-								<button class="bg-slate-600 rounded px-2">Delete</button>
+								<a class="btn btn-default" href={`${base}/${el.id}`}>Open</a>
+								<button class="btn btn-default">Delete</button>
 							</td>
 						</tr>
 					{:else}
 						<tr><td class="px-6 py-4" colspan="3">No charts</td></tr>
-						<tr
-							><td class="px-6 py-4" colspan="3"
-								><a href={`${base}/upload`} class="btn btn-default">Upload new chart</a></td
-							></tr
-						>
 					{/each}
+					<tr
+						><td class="px-6 py-4" colspan="3"
+							><a href={`${base}/upload`} class="btn btn-default">Upload new chart</a></td
+						></tr
+					>
 				{/await}
 			</tbody>
 		</table>

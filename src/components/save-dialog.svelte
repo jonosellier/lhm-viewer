@@ -5,6 +5,7 @@
 	import SensorSelector from './sensor-selector.svelte';
 	import { saveGraph } from '$lib/db';
 	import { goto } from '$app/navigation';
+	import { base } from '$app/paths';
 	const selectedRange = derived(
 		dataStore,
 		(d) => d?.subsets[d.selectedSubset] ?? ([0, 0] as [number, number])
@@ -55,7 +56,7 @@ readings from
 <strong>{$dataStore.show.length ?? 0}</strong>
 sensors to the public. Anyone who has the link can see it.
 <hr class="border-slate-500 my-5" />
-<button class="btn btn-primary" on:click={async () => goto('/' + (await saveGraph()))}>
+<button class="btn btn-primary" on:click={async () => goto(base + '/' + (await saveGraph()))}>
 	Share to The World
 </button>
 
