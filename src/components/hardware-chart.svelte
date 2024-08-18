@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hexToHsl } from '$lib/color-tools';
 	import { MultiChartData, type MetricType } from '$lib/multi-chart';
 	import { preferences, type Preferences } from '$lib/preferences.store';
 	import { dataStore } from '$lib/uploaded-data.store';
@@ -25,6 +26,18 @@
 	};
 
 	const chartData = derived([dataStore, preferences], ([d, p]) => createPlotData(d, d.show, p));
+	const legendData = derived([dataStore, preferences], ([d, p]) => {
+		const shownCharts = d.show.map((v) => d.charts[v]);
+		const uniqueDevices = [...new Set(shownCharts.map((v) => v.path.split('/')[0]))];
+		return uniqueDevices.map((v) => {
+			const colors = shownCharts
+				.filter((c) => c.path.includes(v))
+				.map((v) => p.sensorColor[v.path] ?? v.color)
+				.sort((a, b) => hexToHsl(a).l - hexToHsl(b).l);
+			const label = v;
+			return { colors, label };
+		});
+	});
 
 	function createLayout(traces: Partial<PlotData>[]) {
 		const uniqueTraces = Array.from(new Set(traces.map((v) => v.yaxis))).length;
@@ -103,31 +116,49 @@
 	}
 </script>
 
-<div class="w-full h-full">
-	<!-- {#each traceGroups as group, idx} -->
-	<!-- <div
-			id={chart}
-			class="z-30 w-full flex-grow-1 h-full flex-shrink-1 border-slate-500 chart-el"
-			class:hidden={traceGroups[idx].length < 1}
-		></div> -->
-	{#if $chartData.data.length > 0}
-		<Plot
-			data={$chartData.data}
-			layout={$chartData.layout}
-			config={{
-				scrollZoom: true
-			}}
-			fillParent={true}
-			debounce={250}
+<div class="w-full h-full overflow-x-hidden relative">
+	<div class="absolute mt-5 text-xl text-slate-300 z-30 ms-20 font-bold w-max">
+		<input
+			class="bg-slate-900"
+			style:width={`${$dataStore.name.length + 2}ch`}
+			type="text"
+			bind:value={$dataStore.name}
 		/>
-	{:else}
-		<div class="flex items-center justify-center h-full">
-			<div class="p-8 rounded-xl border border-slate-500 bg-slate-800">
-				<p class="text-center text-2xl">Select some sensor data to plot in the top-left</p>
+	</div>
+	<div
+		class="absolute bg-slate-950 rounded border border-slate-500 w-max max-h-20 z-30 me-2 mt-5 grid grid-rows-3 gap-x-2 grid-flow-col end-0"
+	>
+		{#each $legendData as el}
+			<div class="flex justify-between items-center px-2">
+				<div class="text-xs">{el.label}</div>
+				<div class="inline-bloc ms-3">
+					{#each el.colors as c}
+						<div class="h-3 w-3 inline-block rounded-sm ms-1" style:background-color={c}></div>
+					{/each}
+				</div>
 			</div>
-		</div>
-	{/if}
-	<!-- {/each} -->
+		{/each}
+	</div>
+	<div class="ml-0 h-full" style:margin-right="-78px">
+		{#if $chartData.data.length > 0}
+			<Plot
+				data={$chartData.data}
+				layout={$chartData.layout}
+				config={{
+					scrollZoom: true,
+					displayModeBar: false
+				}}
+				fillParent={true}
+				debounce={250}
+			/>
+		{:else}
+			<div class="flex items-center justify-center h-full">
+				<div class="p-8 rounded-xl border border-slate-500 bg-slate-800">
+					<p class="text-center text-2xl">Select some sensor data to plot in the top-left</p>
+				</div>
+			</div>
+		{/if}
+	</div>
 </div>
 
 <!-- <pre>{JSON.stringify(chartData, undefined, 2)}</pre> -->
