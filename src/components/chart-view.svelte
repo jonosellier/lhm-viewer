@@ -3,12 +3,9 @@
 	import HardwareChart from '$components/hardware-chart.svelte';
 	import SensorSelector from '$components/sensor-selector.svelte';
 	import DataSelector from '$components/data-selector.svelte';
-	import { saveGraph, userStore } from '$lib/db';
+	import { userStore } from '$lib/db';
 	import SaveDialog from '$components/save-dialog.svelte';
-	import { derived } from 'svelte/store';
 	let saveOpen = false;
-
-	const subset = derived(dataStore, (d) => d?.subsets[d.selectedSubset]);
 </script>
 
 {#if $dataStore}
@@ -20,7 +17,7 @@
 		{/if}
 
 		<DataSelector></DataSelector>
-		{#if $userStore}
+		{#if $userStore?.id === $dataStore.owner}
 			<button class="btn btn-primary ms-5" on:click={() => (saveOpen = true)}>Share Chart</button>
 		{/if}
 	</div>
@@ -29,10 +26,17 @@
 	<slot></slot>
 {/if}
 {#if saveOpen}
-	<div class="fixed top-0 z-50 w-full h-full backdrop-blur-lg" on:click={() => (saveOpen = false)}>
+	<div
+		class="fixed top-0 z-50 w-full h-full backdrop-blur-lg"
+		on:keyup={(e) => (e.key === 'esc' ? (saveOpen = false) : void 0)}
+		on:click={() => (saveOpen = false)}
+		role="presentation"
+	>
 		<div
 			on:click|stopPropagation={() => (saveOpen = true)}
+			on:keyup={(e) => (e.key === 'esc' ? (saveOpen = false) : void 0)}
 			class="max-w-lg p-5 mx-auto mt-12 bg-slate-800 border border-slate-500 rounded-lg"
+			role="dialog"
 		>
 			<SaveDialog></SaveDialog>
 		</div>

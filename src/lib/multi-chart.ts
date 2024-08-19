@@ -26,6 +26,7 @@ export class MultiChartData {
 	name: string;
 	selectedSubset = -1;
 	show: number[] = [];
+	owner: string | undefined;
 
 	static readonly metricTypes: MetricType[] = [
 		'control',
@@ -52,8 +53,9 @@ export class MultiChartData {
 		return this._pathMap.get(path);
 	}
 
-	constructor(csvData?: string, name?: string) {
+	constructor(csvData?: string, name?: string, owner?: string) {
 		this.name = name ?? new Date().toISOString();
+		this.owner = owner;
 		if (!csvData) {
 			return;
 		}

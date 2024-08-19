@@ -8,6 +8,11 @@
 	export let level = 0;
 	export let alwaysShow = false;
 	export let startOpen = true;
+	const activatedChildren = derived(
+		dataStore,
+		(d) => d.show.map((idx) => d.charts[idx]).filter((v) => v.path.includes(item.path)).length ?? 0
+	);
+	export let open = level > 0 && $activatedChildren > 0;
 
 	function handleChange(e: Event, item: TreeItem) {
 		if ($dataStore) {
@@ -30,16 +35,10 @@
 		});
 	}
 
-	const activatedChildren = derived(
-		dataStore,
-		(d) => d.show.map((idx) => d.charts[idx]).filter((v) => v.path.includes(item.path)).length ?? 0
-	);
-
 	const shownPaths = derived(dataStore, (d) => d?.show.map((idx) => d.charts[idx]?.path) ?? []);
 
-	let show = level > 0 && $activatedChildren > 0;
 	function toggle(e: Event) {
-		show = !show;
+		open = !open;
 	}
 </script>
 
@@ -48,13 +47,13 @@
 		<div
 			class="px-2 bg-slate-700 border-slate-500 w-full text-start flex items-center heading"
 			style={'top: ' + level * 32 + 'px; z-index: ' + (999 - level)}
-			class:border-bottom={show}
+			class:border-bottom={open}
 		>
 			<button
 				class="hover:bg-slate-500 h-4 w-4 m-1 p-0 rounded-full text-orange-50 text-xs duration-150"
 				on:click={toggle}
-				class:rotate-180={!show}
-				class:bg-orange-600={show}>▼</button
+				class:rotate-180={!open}
+				class:bg-orange-600={open}>▼</button
 			>
 			<div class="inline-flex flex-grow-1 w-full justify-between">
 				<div class="ms-2 capitalize"><slot></slot></div>
@@ -67,7 +66,7 @@
 				{/if}
 			</div>
 		</div>
-		{#if show}
+		{#if open}
 			<ul class="border-t border-slate-500 relative z-50">
 				{#each Object.keys(item.children) as el}
 					<li>

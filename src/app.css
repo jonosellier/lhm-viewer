@@ -37,7 +37,7 @@ button:disabled {
 }
 
 .btn-sm {
-	@apply px-3 py-2 border text-xs rounded-sm;
+	@apply p-1  border text-xs rounded-sm;
 }
 
 .btn-default {
@@ -49,4 +49,8 @@ button:disabled {
 
 input.form-control {
 	@apply bg-slate-700 rounded-lg border border-slate-500 w-full p-5;
+}
+
+output {
+	@apply font-mono bg-slate-900 text-slate-200 rounded-lg px-1;
 }

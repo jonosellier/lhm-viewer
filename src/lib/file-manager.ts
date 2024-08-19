@@ -6,7 +6,7 @@ export async function cacheSave(data: MultiChartData, id: string) {
 	return storeInIndexDb(compressedData, id);
 }
 
-export async function cacheLoad(id: string, name?: string) {
+export async function cacheLoad(id: string, name?: string, owner: string) {
 	const compressedData = await loadFromIndexDb(id).catch((e) => null);
 	if (!compressedData) {
 		return null;
@@ -14,7 +14,7 @@ export async function cacheLoad(id: string, name?: string) {
 	console.log(`Cache hit. Saved ${(compressedData.byteLength / 1000) | 0}KB`);
 	const csvString = await decompress(compressedData);
 	console.log('Loading ', name);
-	const data = new MultiChartData(csvString, name);
+	const data = new MultiChartData(csvString, name, owner);
 	return data;
 }
 

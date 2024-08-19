@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { hexToHsl } from '$lib/color-tools';
+	import { userStore } from '$lib/db';
 	import { MultiChartData, type MetricType } from '$lib/multi-chart';
 	import { preferences, type Preferences } from '$lib/preferences.store';
 	import { dataStore } from '$lib/uploaded-data.store';
@@ -9,6 +10,8 @@
 	import { derived } from 'svelte/store';
 
 	let seenTypes: MetricType[] = [];
+
+	const readOnly = derived([userStore, dataStore], ([u, d]) => !u || u.id !== d.owner);
 
 	const chartLayout: Record<MetricType, { unit: string; range?: [number, number] }> = {
 		control: { unit: '%' },
@@ -123,6 +126,7 @@
 			style:width={`${$dataStore.name.length + 2}ch`}
 			type="text"
 			bind:value={$dataStore.name}
+			readonly={$readOnly}
 		/>
 	</div>
 	<div

@@ -25,6 +25,8 @@
 		});
 		return tree;
 	});
+
+	let open = false;
 </script>
 
 <div class="border border-slate-500 rounded overflow-hidden">
@@ -33,7 +35,11 @@
 			label={'Sensors'}
 			item={{ children: $pathTree, path: '' }}
 			alwaysShow={true}
-			{startOpen}>Sensors</TreeItem
+			{startOpen}
+			bind:open>Sensors</TreeItem
 		>
+		{#if open && false}
+			<button class="btn-sm btn-default m-1 w-max">Edit sensor names</button>
+		{/if}
 	</div>
 </div>

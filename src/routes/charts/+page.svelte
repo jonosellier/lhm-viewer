@@ -1,14 +1,25 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
-	import { getMyCharts, userStore } from '$lib/db';
+	import { deleteChart, getMyCharts, userStore } from '$lib/db';
+	import { dialogStore } from '$lib/dialog.service';
 	import { onMount } from 'svelte';
-	const myCharts = getMyCharts();
+	let myCharts = getMyCharts();
 	onMount(() => {
 		if (!$userStore) {
 			goto(base + '/');
 		}
 	});
+
+	async function deleteChartWithConfrim(id: string) {
+		const userConfirmed = await dialogStore.confirm(
+			'Are you sure you want to delete this chart? This cannot be undone'
+		);
+		if (userConfirmed) {
+			await deleteChart(id);
+			myCharts = getMyCharts();
+		}
+	}
 </script>
 
 <div class="py-6 w-full">
@@ -38,7 +49,9 @@
 							>
 							<td class="px-6 py-4">
 								<a class="btn btn-default" href={`${base}/${el.id}`}>Open</a>
-								<button class="btn btn-default">Delete</button>
+								<button class="btn btn-default" on:click={() => deleteChartWithConfrim(el.id)}
+									>Delete</button
+								>
 							</td>
 						</tr>
 					{:else}

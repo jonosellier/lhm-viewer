@@ -1,4 +1,4 @@
-import { AuthError, createClient, type User } from '@supabase/supabase-js';
+import { createClient, type User } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_KEY } from '$env/static/public';
 import { get, writable } from 'svelte/store';
 import { dataStore } from './uploaded-data.store';
@@ -145,7 +145,7 @@ export async function loadGraph(id: string) {
 		return false;
 	}
 	console.log('Searching cache');
-	const cacheData = await cacheLoad(id, dbData.display_name);
+	const cacheData = await cacheLoad(id, dbData.display_name, dbData.created_by ?? '');
 	if (cacheData) {
 		dataStore.set(cacheData);
 		return false;
@@ -163,7 +163,7 @@ export async function loadGraph(id: string) {
 
 	const buf = await blobRes.data.arrayBuffer();
 	const csvString = await decompress(buf);
-	const obj = new MultiChartData(csvString, dbData.display_name);
+	const obj = new MultiChartData(csvString, dbData.display_name, dbData.created_by ?? '');
 	if (obj.charts.length) {
 		console.log('Caching for later');
 		await cacheSave(obj, id);
@@ -182,6 +182,17 @@ export async function getMyCharts() {
 	}
 
 	return data;
+}
+
+export async function deleteChart(id: string) {
+	const { error } = await supabase.from('graphs').delete().eq('id', id);
+
+	if (error) {
+		console.error('Delete error:', error);
+		throw error;
+	}
+
+	return !!error;
 }
 
 export async function changePassword(
