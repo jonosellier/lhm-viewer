@@ -6,6 +6,8 @@ import { compress, decompress } from './util';
 import type { Database } from './database.types';
 import { cacheLoad, cacheSave } from './file-manager';
 import { MultiChartData } from './multi-chart';
+import { goto } from '$app/navigation';
+import { notify } from './notification.service';
 
 const supabaseUrl = 'https://eysidivvvfuojxtjhect.supabase.co';
 const supabase = createClient<Database>(supabaseUrl, PUBLIC_SUPABASE_KEY);
@@ -33,6 +35,20 @@ const refresh = await supabase.auth.refreshSession();
 const currentUser = refresh.data?.user;
 
 export const userStore = writable<User | undefined>(currentUser ?? undefined);
+
+supabase.auth.onAuthStateChange((event, session) => {
+	console.log(event, session);
+
+	switch (event) {
+		case 'PASSWORD_RECOVERY':
+			userStore.set(session?.user);
+			notify.info('Logged you in. Please change your password now.');
+			goto('/auth');
+			break;
+		default:
+			break;
+	}
+});
 
 export async function createUser({ email, password }: UserCredentials): Promise<AuthResult> {
 	const { data, error } = await supabase.auth.signUp({
@@ -223,4 +239,37 @@ export async function changePassword(
 		return { user: null, error: 'Empty user' };
 	}
 	return { user, error: null };
+}
+
+export async function changePasswordReset(newPw: string, confirm: string): Promise<AuthResult> {
+	const session = get(userStore);
+	if (!session || newPw !== confirm) {
+		return { error: 'Validation error', user: null };
+	}
+	const { error, data } = await supabase.auth.updateUser({
+		password: newPw
+	});
+
+	const { user } = data;
+
+	if (error) {
+		console.error(error);
+		return { error: error.message, user: null };
+	}
+
+	if (!user) {
+		return { user: null, error: 'Empty user' };
+	}
+	return { user, error: null };
+}
+
+export async function resetPassword(email: string): Promise<Partial<AuthResult>> {
+	const { error } = await supabase.auth.resetPasswordForEmail(email, {
+		redirectTo: 'https://jonosellier.github.io/lhm-viewer/change-pw'
+	});
+	if (error) {
+		return { user: null, error: error.message };
+	}
+	notify.info('A password reset message has been sent to ' + email);
+	return {};
 }

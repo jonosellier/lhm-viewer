@@ -54,3 +54,7 @@ input.form-control {
 output {
 	@apply font-mono bg-slate-900 text-slate-200 rounded-lg px-1;
 }
+
+.active {
+	@apply text-orange-600;
+}

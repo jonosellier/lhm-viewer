@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { changePassword, createUser, signIn, signOut, userStore, type AuthResult } from '$lib/db';
+	import {
+		changePassword,
+		createUser,
+		resetPassword,
+		signIn,
+		signOut,
+		userStore,
+		type AuthResult
+	} from '$lib/db';
 
 	let email: string;
 	let newPassword: string;
@@ -148,14 +156,14 @@
 			<div class="flex items-center">
 				<button
 					class="rounded px-2 py-1 text-lg text-slate-500 bg-slate-700 hover:bg-slate-600 hover:text-orange-600"
-					class:text-orange-600={tab === 'login'}
+					class:active={tab === 'login'}
 					on:click={() => {
 						tab = 'login';
 					}}>Log In</button
 				>
 				<button
 					class="rounded px-2 py-1 text-lg text-slate-500 bg-slate-700 hover:bg-slate-600 hover:text-orange-600"
-					class:text-orange-600={tab === 'signup'}
+					class:active={tab === 'signup'}
 					on:click={() => {
 						tab = 'signup';
 					}}>Sign Up</button
@@ -184,10 +192,11 @@
 					<div
 						class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg flex justify-between"
 					>
-						<span>{signInResult.error}</span>
+						<span>{signInResult.error} </span>
 						<button
-							class="text-red-100 hover:bg-red-900 rounded-full px-1"
-							on:click={() => (signInResult = {})}>&times;</button
+							class="btn-sm hover:bg-red-900 hover:underline decoration-red-400 border-transparent"
+							on:click={async () => (signInResult = await resetPassword(email))}
+							>Forgot password</button
 						>
 					</div>
 				{/if}
