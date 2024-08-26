@@ -3,6 +3,8 @@
 	import { derived } from 'svelte/store';
 	import TreeItem from './tree-item.svelte';
 	import type { SensorTree } from '$lib/multi-chart';
+	import Modal from './modal.svelte';
+	import SensorEditor from './sensor-editor.svelte';
 	export let startOpen = true;
 	export let maxHeight = 'calc(100dvh - 16px)';
 	const pathTree = derived(dataStore, (d) => {
@@ -26,7 +28,8 @@
 		return tree;
 	});
 
-	let open = false;
+	let menuOpen = false;
+	let editOpen = false;
 </script>
 
 <div class="border border-slate-500 rounded overflow-hidden">
@@ -36,10 +39,19 @@
 			item={{ children: $pathTree, path: '' }}
 			alwaysShow={true}
 			{startOpen}
-			bind:open>Sensors</TreeItem
+			bind:open={menuOpen}>Sensors</TreeItem
 		>
-		{#if open && false}
-			<button class="btn-sm btn-default m-1 w-max">Edit sensor names</button>
+		{#if menuOpen}
+			<button class="btn-sm btn-default m-1 w-max" on:click={() => (editOpen = true)}
+				>Edit sensor names</button
+			>
 		{/if}
 	</div>
 </div>
+<Modal bind:open={editOpen}
+	><SensorEditor
+		on:closed={() => {
+			editOpen = false;
+		}}
+	/></Modal
+>

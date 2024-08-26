@@ -5,6 +5,7 @@
 	import DataSelector from '$components/data-selector.svelte';
 	import { userStore } from '$lib/db';
 	import SaveDialog from '$components/save-dialog.svelte';
+	import Modal from './modal.svelte';
 	let saveOpen = false;
 </script>
 
@@ -25,20 +26,6 @@
 {:else}
 	<slot></slot>
 {/if}
-{#if saveOpen}
-	<div
-		class="fixed top-0 z-50 w-full h-full backdrop-blur-lg"
-		on:keyup={(e) => (e.key === 'esc' ? (saveOpen = false) : void 0)}
-		on:click={() => (saveOpen = false)}
-		role="presentation"
-	>
-		<div
-			on:click|stopPropagation={() => (saveOpen = true)}
-			on:keyup={(e) => (e.key === 'esc' ? (saveOpen = false) : void 0)}
-			class="max-w-lg p-5 mx-auto mt-12 bg-slate-800 border border-slate-500 rounded-lg"
-			role="dialog"
-		>
-			<SaveDialog></SaveDialog>
-		</div>
-	</div>
-{/if}
+<Modal bind:open={saveOpen}>
+	<SaveDialog></SaveDialog>
+</Modal>

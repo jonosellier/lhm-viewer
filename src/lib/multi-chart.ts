@@ -18,7 +18,6 @@ export type MetricType =
 
 export class MultiChartData {
 	private _pathMap = new Map<string, number>();
-	private _chartType = new Map<string, MetricType>();
 
 	charts: ChartData[] = [];
 	xAxis: Date[] = [];
@@ -46,11 +45,22 @@ export class MultiChartData {
 	static readonly pathMatcher = new RegExp(`/(.+)/(${MultiChartData.metricTypes.join('|')})/(.+)`);
 
 	getChartType(path: string) {
-		return this._chartType.get(path);
+		const type = path.split('/')[1];
+		if (MultiChartData.metricTypes.includes(type as MetricType)) {
+			return type as MetricType;
+		}
+		return undefined;
 	}
 
 	findByPath(path: string) {
 		return this._pathMap.get(path);
+	}
+
+	regenerateMap() {
+		this._pathMap = new Map<string, number>();
+		this.charts.forEach((v, i) => {
+			this._pathMap.set(v.path, i);
+		});
 	}
 
 	constructor(csvData?: string, name?: string, owner?: string) {
@@ -68,9 +78,7 @@ export class MultiChartData {
 			this._pathMap.set(v, i);
 			const [device, chartType, _sensor] = v.split('/');
 			deviceSet.add(device); // add to a unique list of devices for color generation later on
-			if (MultiChartData.metricTypes.includes(chartType as MetricType)) {
-				this._chartType.set(v, chartType as MetricType);
-			} else {
+			if (!MultiChartData.metricTypes.includes(chartType as MetricType)) {
 				console.warn('[MultiChartData]: Unknown type', chartType, 'in', v);
 			}
 		});
