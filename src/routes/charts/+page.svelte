@@ -3,6 +3,7 @@
 	import { base } from '$app/paths';
 	import { deleteChart, getMyCharts, userStore } from '$lib/db';
 	import { dialogStore } from '$lib/dialog.service';
+	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
 	let myCharts = getMyCharts();
 	onMount(() => {
@@ -23,7 +24,10 @@
 </script>
 
 <div class="py-6 w-full">
-	<div class="mx-auto relative overflow-x-auto border border-slate-500 rounded-lg w-max">
+	<div
+		class="mx-auto relative overflow-x-auto border border-slate-500 rounded-lg w-max"
+		use:autoAnimate
+	>
 		<table class="text-sm text-left">
 			<thead class="text-xs text-slate-300 uppercase bg-slate-700">
 				<tr class="border border-slate-500">
@@ -32,7 +36,7 @@
 					<th scope="col" class="px-6 py-3"></th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody use:autoAnimate>
 				{#await myCharts}
 					<tr><td class="px-6 py-4" colspan="3">Loading...</td></tr>
 				{:then chart}

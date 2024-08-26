@@ -8,6 +8,7 @@
 		userStore,
 		type AuthResult
 	} from '$lib/db';
+	import autoAnimate from '@formkit/auto-animate';
 
 	let email: string;
 	let newPassword: string;
@@ -119,34 +120,36 @@
 					disabled={!password || newPassword !== passwordConfirm}
 					type="submit">Change Password</button
 				>
-				{#if newPassword !== passwordConfirm}
-					<div class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg">
-						Passwords do not match
-					</div>
-				{/if}
 
-				{#if changeResult.user}
-					<div
-						class="my-5 p-3 bg-emerald-800 border border-emerald-400 text-emerald-100 rounded-lg flex justify-between"
-					>
-						<span>Password changed successfully</span>
-						<button
-							class="text-emerald-100 hover:bg-emerald-900 rounded-full px-1"
-							on:click={() => (changeResult = {})}>&times;</button
+				<div use:autoAnimate>
+					{#if newPassword !== passwordConfirm}
+						<div class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg">
+							Passwords do not match
+						</div>
+					{/if}
+					{#if changeResult.user}
+						<div
+							class="my-5 p-3 bg-emerald-800 border border-emerald-400 text-emerald-100 rounded-lg flex justify-between"
 						>
-					</div>
-				{/if}
-				{#if changeResult.error}
-					<div
-						class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg flex justify-between"
-					>
-						<span>{changeResult.error}</span>
-						<button
-							class="text-red-100 hover:bg-red-900 rounded-full px-1"
-							on:click={() => (changeResult = {})}>&times;</button
+							<span>Password changed successfully</span>
+							<button
+								class="text-emerald-100 hover:bg-emerald-900 rounded-full px-1"
+								on:click={() => (changeResult = {})}>&times;</button
+							>
+						</div>
+					{/if}
+					{#if changeResult.error}
+						<div
+							class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg flex justify-between"
 						>
-					</div>
-				{/if}
+							<span>{changeResult.error}</span>
+							<button
+								class="text-red-100 hover:bg-red-900 rounded-full px-1"
+								on:click={() => (changeResult = {})}>&times;</button
+							>
+						</div>
+					{/if}
+				</div>
 			</form>
 			<hr class="my-8 border-slate-500" />
 			<button class="btn-lg bg-red-700 border-red-500 text-red-100 w-full" on:click={signOut}
@@ -169,77 +172,84 @@
 					}}>Sign Up</button
 				>
 			</div>
-			{#if tab === 'login'}
-				<form on:submit={handleSignIn}>
-					<input
-						type="email"
-						bind:value={email}
-						class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
-						placeholder="Email"
-					/>
-					<input
-						type="password"
-						bind:value={password}
-						class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
-						placeholder="Password"
-					/>
-					<button
-						class="text-lg px-3 py-2 block my-2 rounded-lg w-full bg-orange-600 text-white hover:bg-orange-500"
-						type="submit">Sign In</button
-					>
-				</form>
-				{#if signInResult.error}
-					<div
-						class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg flex justify-between"
-					>
-						<span>{signInResult.error} </span>
+			<div use:autoAnimate>
+				{#if tab === 'login'}
+					<form on:submit={handleSignIn}>
+						<input
+							type="email"
+							bind:value={email}
+							class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
+							placeholder="Email"
+						/>
+						<input
+							type="password"
+							bind:value={password}
+							class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
+							placeholder="Password"
+						/>
 						<button
-							class="btn-sm hover:bg-red-900 hover:underline decoration-red-400 border-transparent"
-							on:click={async () => (signInResult = await resetPassword(email))}
-							>Forgot password</button
+							class="text-lg px-3 py-2 block my-2 rounded-lg w-full bg-orange-600 text-white hover:bg-orange-500"
+							type="submit">Sign In</button
 						>
+					</form>
+					<div use:autoAnimate>
+						{#if signInResult.error}
+							<div
+								class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg flex justify-between"
+							>
+								<span>{signInResult.error} </span>
+								<button
+									class="btn-sm hover:bg-red-900 hover:underline decoration-red-400 border-transparent"
+									on:click={async () => (signInResult = await resetPassword(email))}
+									>Forgot password</button
+								>
+							</div>
+						{/if}
+					</div>
+				{:else}
+					<form on:submit={handleSignUp}>
+						<input
+							type="email"
+							bind:value={email}
+							class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
+							placeholder="Email"
+						/>
+						<input
+							type="password"
+							bind:value={password}
+							class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
+							placeholder="Password"
+						/>
+						<input
+							type="password"
+							bind:value={passwordConfirm}
+							class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
+							placeholder="Confirm"
+						/>
+						<button
+							class="text-lg px-3 py-2 block my-2 rounded-lg w-full bg-orange-600 border-orange-600 text-white hover:bg-orange-500 disabled:bg-slate-700 border disabled:border-slate-500"
+							disabled={!signUpState.valid}
+							type="submit"
+						>
+							{signUpState.text}
+						</button>
+					</form>
+
+					<div use:autoAnimate>
+						{#if signUpResult.error}
+							<div
+								class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg flex justify-between"
+							>
+								<span>{signUpResult.error}</span>
+								<button
+									class="text-red-100 hover:bg-red-900 rounded-full px-1"
+									on:click={() => (signUpResult = {})}>&times;</button
+								>
+							</div>
+						{/if}
 					</div>
 				{/if}
-			{:else}
-				<form on:submit={handleSignUp}>
-					<input
-						type="email"
-						bind:value={email}
-						class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
-						placeholder="Email"
-					/>
-					<input
-						type="password"
-						bind:value={password}
-						class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
-						placeholder="Password"
-					/>
-					<input
-						type="password"
-						bind:value={passwordConfirm}
-						class="border border-slate-500 bg-slate-900 hover:border-orange-600 focus:border-orange-600 text-white text-lg px-3 py-2 block my-2 rounded-lg w-full"
-						placeholder="Confirm"
-					/>
-					<button
-						class="text-lg px-3 py-2 block my-2 rounded-lg w-full bg-orange-600 border-orange-600 text-white hover:bg-orange-500 disabled:bg-slate-700 border disabled:border-slate-500"
-						disabled={!signUpState.valid}
-						type="submit"
-					>
-						{signUpState.text}
-					</button>
-				</form>
-				{#if signUpResult.error}
-					<div
-						class="my-5 p-3 bg-red-800 border border-red-400 text-red-100 rounded-lg flex justify-between"
-					>
-						<span>{signUpResult.error}</span>
-						<button
-							class="text-red-100 hover:bg-red-900 rounded-full px-1"
-							on:click={() => (signUpResult = {})}>&times;</button
-						>
-					</div>
-				{/if}
-			{/if}
+			</div>
 		{/if}
 	</div>
 </div>

@@ -4,6 +4,7 @@
 	import { MultiChartData, type MetricType } from '$lib/multi-chart';
 	import { preferences, type Preferences } from '$lib/preferences.store';
 	import { dataStore } from '$lib/uploaded-data.store';
+	import autoAnimate from '@formkit/auto-animate';
 	import { json } from '@sveltejs/kit';
 	import type { LayoutAxis, PlotData } from 'plotly.js';
 	import Plot, { type Data, type Layout } from 'svelte-plotly.js';
@@ -120,9 +121,9 @@
 </script>
 
 <div class="w-full h-full overflow-x-hidden relative">
-	<div class="absolute mt-5 text-xl text-slate-300 z-30 ms-20 font-bold w-max">
+	<div class="absolute mt-5 text-3xl text-slate-300 z-30 ms-20 font-bold max-w-2xl">
 		<input
-			class="bg-slate-900"
+			class="bg-slate-900 hover:bg-slate-800 focus:bg-slate-800 border border-slate-900 focus:border-slate-500 leading-relaxed px-1 rounded-lg"
 			style:width={`${$dataStore.name.length + 2}ch`}
 			type="text"
 			bind:value={$dataStore.name}
@@ -130,7 +131,9 @@
 		/>
 	</div>
 	<div
-		class="absolute bg-slate-950 rounded border border-slate-500 w-max max-h-20 z-30 me-2 mt-5 grid grid-rows-3 gap-x-2 grid-flow-col end-0"
+		class="absolute bg-slate-950 rounded border border-slate-500 w-max h-min max-h-20 z-30 me-2 mt-5 grid grid-rows-3 gap-x-2 grid-flow-col end-0"
+		style={`grid-template-rows: repeat(${Math.min($legendData.length, 3)}, minmax(0, 1fr));`}
+		use:autoAnimate
 	>
 		{#each $legendData as el}
 			<div class="flex justify-between items-center px-2">

@@ -6,7 +6,10 @@
 	import { userStore } from '$lib/db';
 	import SaveDialog from '$components/save-dialog.svelte';
 	import Modal from './modal.svelte';
+	import { page } from '$app/stores';
 	let saveOpen = false;
+
+	const existingId = $page.params['id'];
 </script>
 
 {#if $dataStore}
@@ -19,13 +22,20 @@
 
 		<DataSelector></DataSelector>
 		{#if $userStore?.id === $dataStore.owner}
-			<button class="btn btn-primary ms-5" on:click={() => (saveOpen = true)}>Share Chart</button>
+			<button class="btn btn-primary ms-5" on:click={() => (saveOpen = true)}
+				>{existingId ? 'Save Changes' : 'Share Chart'}</button
+			>
 		{/if}
 	</div>
 	<HardwareChart></HardwareChart>
 {:else}
 	<slot></slot>
 {/if}
-<Modal bind:open={saveOpen}>
-	<SaveDialog></SaveDialog>
+<Modal bind:open={saveOpen} title="Save Chart">
+	<SaveDialog
+		on:closed={() => {
+			console.log('closed');
+			saveOpen = false;
+		}}
+	></SaveDialog>
 </Modal>

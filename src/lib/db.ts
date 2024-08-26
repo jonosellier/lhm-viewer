@@ -37,8 +37,6 @@ const currentUser = refresh.data?.user;
 export const userStore = writable<User | undefined>(currentUser ?? undefined);
 
 supabase.auth.onAuthStateChange((event, session) => {
-	console.log(event, session);
-
 	switch (event) {
 		case 'PASSWORD_RECOVERY':
 			userStore.set(session?.user);
@@ -94,7 +92,7 @@ export async function signOut() {
 	}
 }
 
-export async function saveGraph() {
+export async function saveGraph(id?: string) {
 	const dataToSave: MultiChartData = get(dataStore) as MultiChartData;
 	if (!dataStore) {
 		return;
@@ -102,7 +100,6 @@ export async function saveGraph() {
 
 	const now = new Date().toISOString();
 	const fileName = dataToSave.name ?? 'Upload-' + now;
-	const bucketPath = (get(userStore)?.id + '_' + fileName).replace(/[\s:]/g, '_');
 
 	console.log('Saving data at', now);
 	console.log('Compressing...');
@@ -119,23 +116,35 @@ export async function saveGraph() {
 	const compressedData = await compress(
 		dataToSave.toCsv(Object.keys(ops).length > 0 ? ops : undefined)
 	);
+	const bucketPath = btoa(
+		String.fromCharCode(
+			...new Uint8Array(await window.crypto.subtle.digest('SHA-256', compressedData))
+		)
+			.replaceAll('+', '-')
+			.replaceAll('/', '_')
+	);
 	const fileBlob = new Blob([compressedData]);
 	console.log('Uploading to bucket...');
 	const { data: storageData, error } = await supabase.storage
 		.from('graphs')
 		.upload(bucketPath, fileBlob);
 	if (error) {
-		console.error('Upload error:', error);
-		throw error;
+		if ((error as any).statusCode === '409') {
+			console.warn('No chart changes to save');
+		} else {
+			console.error('Upload error:', error);
+			throw error;
+		}
 	}
 	console.log('Uploaded successfully!', storageData);
 
 	const insertRes = await supabase
 		.from('graphs')
-		.insert({
+		.upsert({
 			created_at: now,
 			display_name: fileName,
-			data_path: storageData.fullPath
+			data_path: bucketPath,
+			id
 		})
 		.select();
 	if (insertRes.error) {
@@ -160,15 +169,15 @@ export async function loadGraph(id: string) {
 		console.log('Not found in DB. Giving up :(');
 		return false;
 	}
-	console.log('Searching cache');
-	const cacheData = await cacheLoad(id, dbData.display_name, dbData.created_by ?? '');
-	if (cacheData) {
-		dataStore.set(cacheData);
-		return false;
-	}
+	// console.log('Searching cache');
+	// const cacheData = await cacheLoad(id, dbData.display_name, dbData.created_by ?? '');
+	// if (cacheData) {
+	// 	dataStore.set(cacheData);
+	// 	return false;
+	// }
 	console.log('Cache miss. Checking DB');
 	console.log('Getting blob');
-	const blobRes = await supabase.storage.from('public').download(dbData.data_path);
+	const blobRes = await supabase.storage.from('public').download(`graphs/${dbData.data_path}`);
 	if (blobRes.error) {
 		console.error('Retrieval error for id', 'and path', blobRes.error);
 		throw blobRes.error;

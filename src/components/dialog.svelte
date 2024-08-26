@@ -2,6 +2,7 @@
 	import { dialogStore } from '$lib/dialog.service';
 	import { onDestroy } from 'svelte';
 
+	import autoAnimate from '@formkit/auto-animate';
 	let text: string;
 	let resolve: ((v: boolean) => void) | null = null;
 
@@ -28,6 +29,7 @@
 		class="fixed top-0 z-50 w-full h-full backdrop-blur-lg"
 		role="presentation"
 		on:click={handleCancel}
+		use:autoAnimate
 	>
 		<div
 			class="max-w-lg p-5 mx-auto mt-12 bg-slate-800 border border-slate-500 rounded-lg text-white"

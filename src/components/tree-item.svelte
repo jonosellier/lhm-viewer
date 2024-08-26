@@ -2,6 +2,7 @@
 	import type { TreeItem } from '$lib/data';
 	import { preferences } from '$lib/preferences.store';
 	import { dataStore } from '$lib/uploaded-data.store';
+	import autoAnimate from '@formkit/auto-animate';
 	import { derived } from 'svelte/store';
 	export let label = '';
 	export let item: TreeItem;
@@ -42,18 +43,18 @@
 	}
 </script>
 
-<div class="item-holder w-full bg-slate-800">
+<div class="item-holder w-full bg-slate-800" use:autoAnimate>
 	{#if item.children}
-		<div
-			class="px-2 bg-slate-700 border-slate-500 w-full text-start flex items-center heading"
+		<button
+			on:click={toggle}
+			class="px-2 bg-slate-700 border-slate-500 w-full text-start flex items-center heading hover:bg-slate-600"
 			style={'top: ' + level * 32 + 'px; z-index: ' + (999 - level)}
 			class:border-bottom={open}
 		>
-			<button
-				class="hover:bg-slate-500 h-4 w-4 m-1 p-0 rounded-full text-orange-50 text-xs duration-150"
-				on:click={toggle}
+			<span
+				class="inline-block hover:bg-slate-500 text-center h-4 w-4 m-1 p-0 rounded-full text-orange-50 text-xs duration-150"
 				class:rotate-180={!open}
-				class:bg-orange-600={open}>▼</button
+				class:bg-orange-600={open}>▼</span
 			>
 			<div class="inline-flex flex-grow-1 w-full justify-between">
 				<div class="ms-2 capitalize"><slot></slot></div>
@@ -65,9 +66,9 @@
 					</span>
 				{/if}
 			</div>
-		</div>
+		</button>
 		{#if open}
-			<ul class="border-t border-slate-500 relative z-50">
+			<ul class="border-t border-slate-500 relative z-50 first:border-l">
 				{#each Object.keys(item.children) as el}
 					<li>
 						<svelte:self label={el} item={item.children[el]} level={level + 1}>{el}</svelte:self>
@@ -118,11 +119,6 @@
 	}
 	li {
 		padding-left: 8px;
-	}
-
-	.item-holder:hover > button:not(:hover) {
-		background-color: rgb(203 213 225);
-		color: rgb(15 23 42);
 	}
 
 	label:has(input:checked):hover {

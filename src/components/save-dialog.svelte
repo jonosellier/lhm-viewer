@@ -6,10 +6,30 @@
 	import { saveGraph } from '$lib/db';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
+	import { page } from '$app/stores';
+	import { notify } from '$lib/notification.service';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
 	const selectedRange = derived(
 		dataStore,
 		(d) => d?.subsets[d.selectedSubset] ?? ([0, 0] as [number, number])
 	);
+	const existingId = $page.params['id'];
+
+	async function save() {
+		const newId = await saveGraph(existingId).catch((e) => {
+			notify.error('Error saving chart');
+			throw e;
+		});
+		notify.info('Saved successfully');
+		dispatch('closed', {
+			closed: true
+		});
+		if (newId !== existingId) {
+			goto(base + '/' + newId);
+		}
+	}
 </script>
 
 <h2 class="text-sm text-slate-400 ps-2">Name</h2>
@@ -56,8 +76,8 @@ readings from
 <strong>{$dataStore.show.length ?? 0}</strong>
 sensors to the public. Anyone who has the link can see it.
 <hr class="border-slate-500 my-5" />
-<button class="btn btn-primary" on:click={async () => goto(base + '/' + (await saveGraph()))}>
-	Share to The World
+<button class="btn btn-primary" on:click={save}>
+	{existingId ? 'Update Chart' : 'Share to The World'}
 </button>
 
 <style lang="css">

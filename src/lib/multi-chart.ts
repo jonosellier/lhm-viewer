@@ -110,7 +110,7 @@ export class MultiChartData {
 
 		this.subsets = this.detectDataSubsets(this.xAxis);
 
-		if (this.charts.length < 10) {
+		if (this.charts.length < 20) {
 			this.show = this.charts.map((_, i) => i); // show all if small chart
 		}
 	}
