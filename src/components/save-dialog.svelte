@@ -37,7 +37,7 @@
 			if ($dataStore) {
 				$dataStore.show = [];
 			}
-		}}>All</button
+		}}>Select All</button
 	>
 </div>
 {#if $dataStore.subsets.length > 1}
