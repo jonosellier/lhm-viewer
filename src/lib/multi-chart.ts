@@ -181,12 +181,12 @@ export class MultiChartData {
 
 	private detectDataSubsets(data: Date[]): [number, number][] {
 		const intervals = data.map((d, i) => (i > 0 ? d.valueOf() - data[i - 1].valueOf() : 0));
-		const regularInterval = intervals[(intervals.length * 0.9) | 0];
 		const subsets: [number, number][] = [];
 		let subsetStart = 0;
 
 		for (let i = 1; i < data.length; i++) {
-			if (intervals[i] > 50 * regularInterval) {
+			// 15min gap -> new subset
+			if (intervals[i] - intervals[i - 1] > 900000) {
 				subsets.push([subsetStart, i - 1]);
 				subsetStart = i;
 			}

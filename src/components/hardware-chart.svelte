@@ -12,7 +12,10 @@
 
 	let seenTypes: MetricType[] = [];
 
-	const readOnly = derived([userStore, dataStore], ([u, d]) => !u || u.id !== d.owner);
+	const readOnly = derived(
+		[userStore, dataStore],
+		([u, d]) => !u || (u.id !== d.owner && !!d.owner)
+	);
 
 	const chartLayout: Record<MetricType, { unit: string; range?: [number, number] }> = {
 		control: { unit: '%' },
@@ -123,11 +126,12 @@
 <div class="w-full h-full overflow-x-hidden relative">
 	<div class="absolute mt-5 text-3xl text-slate-300 z-30 ms-20 font-bold max-w-2xl">
 		<input
-			class="bg-slate-900 hover:bg-slate-800 focus:bg-slate-800 border border-slate-900 focus:border-slate-500 leading-relaxed px-1 rounded-lg"
-			style:width={`${$dataStore.name.length + 2}ch`}
+			class="bg-slate-900 hover:bg-slate-800 focus:bg-slate-800 border border-slate-900 focus:border-slate-500 leading-relaxed px-1 rounded-lg min-w-md"
+			style:width={`${Math.max(8, $dataStore.name.length) + 2}ch`}
 			type="text"
 			bind:value={$dataStore.name}
 			readonly={$readOnly}
+			placeholder="Chart title"
 		/>
 	</div>
 	<div

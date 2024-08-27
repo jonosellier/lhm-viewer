@@ -21,9 +21,15 @@
 		{/if}
 
 		<DataSelector></DataSelector>
-		{#if $userStore?.id === $dataStore.owner}
-			<button class="btn btn-primary ms-5" on:click={() => (saveOpen = true)}
-				>{existingId ? 'Save Changes' : 'Share Chart'}</button
+		{#if $userStore}
+			{#if $userStore?.id === $dataStore.owner || !$dataStore.owner}
+				<button class="btn btn-primary ms-5" on:click={() => (saveOpen = true)}
+					>{existingId ? 'Save Changes' : 'Share Chart'}</button
+				>
+			{/if}
+		{:else}
+			<span class="uppercase text-xs text-slate-500 font-bold mx-4 my-2"
+				>Sign in to save charts</span
 			>
 		{/if}
 	</div>
