@@ -1,0 +1,1 @@
+import{w as i}from"./entry.Dn6eCFfB.js";function s(){const{subscribe:o,set:e}=i({text:"",resolve:null});function r(t){return new Promise(l=>{e({text:t,resolve:l})}).finally(()=>{e({text:"",resolve:null})})}function n(t){return setTimeout(()=>e({text:"",resolve:null}),0),t}return{subscribe:o,confirm:r,closeDialog:n}}const c=s();export{c as d};
