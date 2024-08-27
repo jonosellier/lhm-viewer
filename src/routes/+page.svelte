@@ -1,12 +1,54 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import Icon from '$components/icon.svelte';
+	import { scrollbar } from '$lib/actions/scrollbar';
+	import logo from '$lib/assets/cmr-wider.webp';
 </script>
 
-<div class="flex w-full h-full items-center justify-center flex-col">
-	<h1 class="text-6xl mb-20 font-bold">ChartMyRig</h1>
-	<div class="p-8 rounded-xl border border-slate-500 bg-slate-800 max-w-3xl w-max">
+<div class="flex w-full h-full items-center justify-between mx-auto absolute top-0 left-0">
+	<div class="flex-grow h-full"></div>
+	<div class="h-full main-menu me-96 pt-4 flex-shrink-0">
+		<img src={logo} alt="" class="block h-40 mb-20" />
+		<div class="ps-20">
+			<a
+				class="btn-lg btn-default text-start block my-10 max-w-2xl text-slate-500 hover:text-orange-500 duration-100"
+				href={`${base}/upload`}
+			>
+				<div class="py-6 ps-8 flex justify-between items-center">
+					<div class="pe-6">
+						<h2 class="text-4xl font-bold uppercase text-slate-200 mb-4 tracking-wider">
+							Import a new chart
+						</h2>
+						<p class="text-slate-300">Import data from Libre Hardware Monitor to view online</p>
+					</div>
+					<div class="me-4"><Icon icon="plus-lg" size={64}></Icon></div>
+				</div>
+			</a>
+			<a
+				class="btn-lg btn-default text-start block my-10 max-w-2xl text-slate-500 hover:text-orange-500 duration-100"
+				href={`${base}/charts`}
+			>
+				<div class="py-6 ps-8 flex justify-between items-center">
+					<div class="pe-6">
+						<h2 class="text-4xl font-bold uppercase text-slate-200 mb-4 tracking-wider">
+							View my charts
+						</h2>
+						<p class="text-slate-300">See previously uploaded chart data</p>
+					</div>
+					<div class="me-4"><Icon icon="graph-up" size={64}></Icon></div>
+				</div>
+			</a>
+		</div>
+	</div>
+	<div
+		class=" bg-slate-800 max-w-3xl flex-grow h-full border-l border-slate-500 pl-12 pr-5 overflow-auto"
+		use:scrollbar
+	>
+		<div
+			class="sticky top-0 h-20 w-full bg-gradient-to-b from-slate-800 via-slate-800 to-transparent"
+		></div>
 		<h1 class="text-4xl pb-3">Get Started</h1>
-		<ol class="list-decimal marker:text-orange-500 text-2xl ps-8">
+		<ol class="list-decimal marker:text-orange-500 text-xl ps-8 w-full">
 			<li class="my-5">
 				Using Libre Hardware Monitor, select <strong>Options</strong> in the menu bar and make sure
 				<strong>Log Sensors</strong> is checked. This will start dumping every sensor reading to a log
@@ -48,4 +90,14 @@
 			</li>
 		</ol>
 	</div>
+
+	<div class="flex-grow h-full bg-slate-800"></div>
 </div>
+
+<style>
+	.main-menu {
+		width: 100%;
+		max-width: calc(1920px - 44rem);
+		margin-left: -4rem;
+	}
+</style>
