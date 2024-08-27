@@ -2,7 +2,8 @@
 	import { base } from '$app/paths';
 </script>
 
-<div class="flex w-full h-full items-center justify-center">
+<div class="flex w-full h-full items-center justify-center flex-col">
+	<h1 class="text-6xl mb-20 font-bold">ChartMyRig</h1>
 	<div class="p-8 rounded-xl border border-slate-500 bg-slate-800 max-w-3xl w-max">
 		<h1 class="text-4xl pb-3">Get Started</h1>
 		<ol class="list-decimal marker:text-orange-500 text-2xl ps-8">
