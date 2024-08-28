@@ -3,6 +3,7 @@
 	import Icon from '$components/icon.svelte';
 	import { scrollbar } from '$lib/actions/scrollbar';
 	import logo from '$lib/assets/cmr-wider.webp';
+	import { userStore } from '$lib/db';
 </script>
 
 <div class="flex w-full h-full items-center justify-between mx-auto absolute top-0 left-0">
@@ -27,6 +28,8 @@
 			<a
 				class="btn-lg btn-default text-start block my-10 max-w-2xl text-slate-500 hover:text-orange-500 duration-100"
 				href={`${base}/charts`}
+				class:pointer-events-none={!$userStore}
+				class:opacity-50={!$userStore}
 			>
 				<div class="py-6 ps-8 flex justify-between items-center">
 					<div class="pe-6">
@@ -38,6 +41,9 @@
 					<div class="me-4"><Icon icon="graph-up" size={64}></Icon></div>
 				</div>
 			</a>
+			{#if !$userStore}
+				<div class="uppercase text-xs text-slate-500 font-bold my-2">Sign in to save charts</div>
+			{/if}
 		</div>
 	</div>
 	<div

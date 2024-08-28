@@ -14,11 +14,12 @@
 	{#if $userStore}
 		<a href={`${base}/charts`} class="btn btn-borderless">My Charts</a>
 	{/if}
-	<a href={`${base}/upload`} class="btn btn-borderless">Upload</a>
+	<a href={`${base}/upload`} class="btn btn-borderless">Import</a>
 	{#if $page.url.pathname !== '/'}
 		<a
 			href={`${base}/`}
 			class="rounded-lg hover:border-orange-500 border border-transparent p-0 overflow-hidden ring-orange-500/70 ring-0 hover:ring-4"
+			style="margin: -0.25rem 0"
 		>
 			<img src={logo} alt="" class="h-10" /></a
 		>
