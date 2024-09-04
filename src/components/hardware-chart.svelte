@@ -66,7 +66,7 @@
 			xaxis: {
 				rangeslider: {
 					visible: true,
-					thickness: 0.1
+					thickness: 0.025
 				}
 			}
 		};
@@ -143,7 +143,7 @@
 			<div class="flex justify-between items-center px-2">
 				<div class="text-xs">{el.label}</div>
 				<div class="inline-bloc ms-3">
-					{#each el.colors as c}
+					{#each new Set(el.colors) as c}
 						<div class="h-3 w-3 inline-block rounded-sm ms-1" style:background-color={c}></div>
 					{/each}
 				</div>

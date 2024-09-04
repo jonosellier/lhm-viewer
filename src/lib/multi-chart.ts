@@ -84,23 +84,30 @@ export class MultiChartData {
 		});
 
 		const uniqueDevices = Array.from(deviceSet).sort(); // make array and sort for consistency
-		let luminosity = 50;
-
+		const luminosity = [50, 75, 55, 40, 60, 45, 25, 65, 30, 35];
+		const sensorsSeen = new Map<string, number>();
 		dataRows.forEach((row) => {
 			const [timestamp, ...data] = row.split(','); // pull the timestamp and sensor reading from that time
 			this.xAxis.push(new Date(timestamp)); // add the timestamp to the x axis
 			// on every value fro that time
+			let fallbackLuminosity = 52;
 			data.forEach((c, i) => {
 				// create a series for that value if it doesn't exist
+				const [device, type, sensor] = hwPaths[i].split('/');
 				if (!this.charts[i]) {
-					const hue =
-						(uniqueDevices.indexOf(hwPaths[i].split('/')[0]) / uniqueDevices.length) * 360;
-					luminosity = luminosity > 50 ? luminosity / 1.5 : luminosity * 1.7; // luminosity that is unalike to neighbors
+					const hue = (uniqueDevices.indexOf(device) / uniqueDevices.length) * 360;
+					const deviceMeasurement = `${device}/${type}`;
+					const numDevices = sensorsSeen.get(deviceMeasurement) ?? 0;
+					sensorsSeen.set(deviceMeasurement, numDevices + 1);
+					if (numDevices > 9) {
+						fallbackLuminosity =
+							fallbackLuminosity > 50 ? fallbackLuminosity / 1.5 : fallbackLuminosity * 1.7; // luminosity that is unalike to neighbors
+					}
 					this.charts[i] = {
 						label: sensors[i],
 						path: hwPaths[i],
 						values: [],
-						color: hslToHex(hue, 100, luminosity)
+						color: hslToHex(hue, 100, numDevices > 9 ? fallbackLuminosity : luminosity[numDevices])
 					};
 				}
 				// add  the latest value to the series
