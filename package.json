@@ -6,7 +6,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"predeploy": "vite build",
-		"deploy": "surge --domain chartmyrig.surge.sh",
+		"deploy": "surge --project ./build/ --domain chartmyrig.surge.sh",
 		"preview": "vite preview",
 		"test": "npm run test:integration && npm run test:unit",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
